@@ -44,12 +44,16 @@ INSTALLED_APPS = [
     # Installed apps
     'rest_framework',
     'drf_spectacular',
+    'corsheaders',
     # Created apps
     'apps.users',
     'apps.diagrams',
 ]
 
 MIDDLEWARE = [
+    # Installed middleware
+    'corsheaders.middleware.CorsMiddleware',
+    # Default middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -143,6 +147,7 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+# drf-spectacular
 SPECTACULAR_SETTINGS = {
     'TITLE': 'UML diagrams API',
     'DESCRIPTION':
@@ -157,3 +162,8 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
+
+# django-cors-headers
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]

@@ -1,20 +1,13 @@
-from django.urls import path
+from django.urls import path, include
 from apps.diagrams.api.v1 import views
+from rest_framework import routers
+
+
+router = routers.SimpleRouter()
+router.register(r'', views.DiagramViewSet)
+
 
 urlpatterns = [
-    path('', views.DiagramViewSet.as_view(
-        {
-            'get': 'list',
-            'post': 'create',
-        }
-    )),
-    path('<int:pk>/', views.DiagramViewSet.as_view(
-        {
-            'get': 'retrieve',
-            'put': 'update',
-            'patch': 'partial_update',
-            'delete': 'destroy',
-        }
-    )),
+    path('', include(router.urls)),
     path('<int:pk>/copy/', views.DiagramCopyAPIView.as_view()),
 ]
