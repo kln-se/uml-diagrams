@@ -3,14 +3,18 @@ from django.db import models
 
 
 class Diagram(models.Model):
-    title = models.CharField(max_length=255, null=False, blank=False, verbose_name="Diagram title")
+    title = models.CharField(
+        max_length=255, null=False, blank=False, verbose_name="Diagram title"
+    )
     json = models.JSONField(
         null=False,
         blank=False,
         verbose_name="Diagram JSON",
         help_text="Diagram structure and properties in JSON format.",
     )
-    description = models.TextField(blank=True, default="", verbose_name="Diagram description")
+    description = models.TextField(
+        blank=True, default="", verbose_name="Diagram description"
+    )
     contributor = models.ForeignKey(
         get_user_model(),
         on_delete=models.CASCADE,

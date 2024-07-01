@@ -10,7 +10,7 @@ The API supports:
 # 2. How to run
 
 **Basic run:**
-1. Proceed to the directory where the project should be stored:
+1. Proceed to the directory where the project should be placed:
 ```commandline
 cd <path-to-directory>
 ```
@@ -39,7 +39,14 @@ python manage.py migrate
 # Django
 SECRET_KEY=<some-secret-key>
 ```
-8. Run django project:
+8. **(Optional)** Сonfigure the CORS (Cross-Origin Resource Sharing) settings in your `settings.py` file by adding the domain(s) of your front-end application to the `CORS_ALLOWED_ORIGINS` list.
+For example:
+```python
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
+```
+9. Run django project:
 ```commandline
 python manage.py runserver <port>
 ```

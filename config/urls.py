@@ -1,11 +1,10 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-
 
 api_v1_urlpatterns = [
     # API docs
@@ -21,11 +20,11 @@ api_v1_urlpatterns = [
     ),
     # Apps
     path("users/", include("apps.users.api.v1.urls")),
-    path("diagrams/", include("apps.diagrams.api.v1.urls"))
+    path("diagrams/", include("apps.diagrams.api.v1.urls")),
 ]
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("api/v1/", include(api_v1_urlpatterns)),
 ]

@@ -1,6 +1,5 @@
-from typing import Dict
-
 from rest_framework import serializers
+
 from apps.diagrams.models import Diagram
 
 
