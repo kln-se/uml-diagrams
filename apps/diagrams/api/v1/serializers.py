@@ -9,8 +9,6 @@ class DiagramSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class DiagramCopySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Diagram
-        fields = "__all__"
+class DiagramCopySerializer(DiagramSerializer):
+    class Meta(DiagramSerializer.Meta):
         read_only_fields = ["title", "json"]
