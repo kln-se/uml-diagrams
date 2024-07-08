@@ -16,7 +16,7 @@ class TestDiagramSerializer:
             "title": diagram.title,
             "json": diagram.json,
             "description": diagram.description,
-            "contributor": diagram.contributor.id,
+            "owner": diagram.owner.id,
             "created_at": diagram.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "updated_at": diagram.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }

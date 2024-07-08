@@ -8,6 +8,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         "email",
         "first_name",
         "last_name",
+        "role",
         "is_staff",
         "is_superuser",
         "is_active",

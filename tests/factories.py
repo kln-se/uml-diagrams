@@ -20,6 +20,6 @@ class DiagramFactory(DjangoModelFactory):
     title = factory.Faker("sentence")
     json = factory.Faker("json")
     description = factory.Faker("text")
-    contributor = factory.SubFactory(UserFactory)
+    owner = factory.SubFactory(UserFactory)
     created_at = factory.Faker("date_time")
     updated_at = factory.Faker("date_time")

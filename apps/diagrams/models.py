@@ -15,9 +15,9 @@ class Diagram(models.Model):
     description = models.TextField(
         blank=True, default="", verbose_name="Diagram description"
     )
-    contributor = models.ForeignKey(
+    owner = models.ForeignKey(
         get_user_model(),
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         verbose_name="Contributor",
         help_text="User who added this diagram to the database.",

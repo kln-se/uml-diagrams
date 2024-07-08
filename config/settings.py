@@ -19,9 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables
 env = environ.Env()
-if env.bool(
-    "DJANGO_READ_ENV_FILE", default=True
-):  # TODO: set default=False in production
+# TODO: set default=False in production
+if env.bool("DJANGO_READ_ENV_FILE", default=True):
     env.read_env(str(BASE_DIR / ".env"))
 
 # TODO: check
@@ -47,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Installed apps
     "rest_framework",
+    "rest_framework.authtoken",
     "drf_spectacular",
     "corsheaders",
     # Created apps
@@ -145,9 +145,9 @@ REST_FRAMEWORK = {
     # 'DEFAULT_RENDERER_CLASSES': [
     #     'rest_framework.renderers.JSONRenderer',
     # ],
-    # "DEFAULT_AUTHENTICATION_CLASSES": [
-    #     "rest_framework.authentication.TokenAuthentication",
-    # ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -162,6 +162,10 @@ SPECTACULAR_SETTINGS = {
         1. Store, retrieve, update and delete created UML diagrams;
         2. Retrieve all stored UML diagrams;
         3. Create copy of a stored UML diagram.
+
+    Basic permission rules:
+        1. Users can create, retrieve, update, delete and copy their own UML diagrams;
+        2. Admins can create, retrieve, update, delete and copy any UML diagram.
     """,
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,

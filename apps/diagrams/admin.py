@@ -7,7 +7,7 @@ class DiagramAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "description",
-        "contributor",
+        "owner",
         "created_at",
         "updated_at",
     )

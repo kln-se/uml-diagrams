@@ -150,3 +150,6 @@ media/
 
 # Other & custom
 beta/
+*.drawio
+*.drawio.bkp
+*.drawio.dtmp

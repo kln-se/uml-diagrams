@@ -1,12 +1,15 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from apps.users.constants import UserRoles
 from apps.users.managers import UserManager
 
 
 class User(AbstractUser):
     email: str = models.EmailField(unique=True)
-    # Set email field to be unique user's identifier instead of username field
+    role: str = models.CharField(
+        max_length=32, choices=UserRoles.CHOICES, default=UserRoles.USER
+    )
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
@@ -15,10 +18,19 @@ class User(AbstractUser):
     groups = None
     user_permissions = None
 
-    # Custom fields
-    # ...
-
     objects = UserManager()
 
+    @property
+    def is_user(self):
+        return self.role == UserRoles.USER
+
+    @property
+    def is_moderator(self):
+        return self.role in (UserRoles.MODERATOR, UserRoles.ADMIN)
+
+    @property
+    def is_admin(self):
+        return self.role == UserRoles.ADMIN or self.is_superuser
+
     def __str__(self):
-        return f"User: {self.email}"
+        return f"{self.role}: {self.email}"
