@@ -9,6 +9,7 @@ from apps.authentication.api.v1.permissions import IsAdminOrIsOwner
 from apps.diagrams.api.v1.serializers import DiagramCopySerializer, DiagramSerializer
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
+from docs.api.templates.parameters import required_header_auth_parameter
 
 
 # region @extend_schema
@@ -17,39 +18,68 @@ from apps.diagrams.models import Diagram
         tags=[DiagramsConfig.tag],
         summary="List diagrams",
         description="Returns a list of all available diagrams.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: DiagramSerializer(many=True),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+        },
     ),
     create=extend_schema(
         tags=[DiagramsConfig.tag],
         summary="Create a new diagram",
         description="Creates a new diagram based on the provided data.",
-        request=DiagramSerializer,
-        responses={201: DiagramSerializer},
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: DiagramSerializer,
+            400: OpenApiResponse(description="JSON parse error"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+        },
     ),
     retrieve=extend_schema(
         tags=[DiagramsConfig.tag],
         summary="Retrieve a diagram",
         description="Returns the details of a specific diagram.",
-        responses={200: DiagramSerializer},
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: DiagramSerializer,
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
     ),
     update=extend_schema(
         tags=[DiagramsConfig.tag],
         summary="Update a diagram",
         description="Updates the details of a specific diagram.",
-        request=DiagramSerializer,
-        responses={200: DiagramSerializer},
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: DiagramSerializer,
+            400: OpenApiResponse(description="JSON parse error"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
     ),
     partial_update=extend_schema(
         tags=[DiagramsConfig.tag],
         summary="Partially update a diagram",
         description="Partially updates the details of a specific diagram.",
-        request=DiagramSerializer,
-        responses={200: DiagramSerializer},
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: DiagramSerializer,
+            400: OpenApiResponse(description="JSON parse error"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
     ),
     destroy=extend_schema(
         tags=[DiagramsConfig.tag],
         summary="Delete a diagram",
         description="Deletes a specific diagram.",
-        responses={204: None},
+        parameters=[required_header_auth_parameter],
+        responses={
+            204: OpenApiResponse(description="Deleted successfully"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
     ),
 )
 # endregion
@@ -98,11 +128,14 @@ class DiagramViewSet(viewsets.ModelViewSet):
     summary="Create a copy of an existing diagram",
     description="This API endpoint allows you to create a copy of an existing diagram. "
     "Copied diagram will have the same content as the original one, \
-    but a different title. New diagram description can be provided. \
-    The owner of the copied diagram will be the authenticated user.",
+                but a different title. New diagram description can be provided. \
+                The owner of the copied diagram will be the authenticated user.",
+    parameters=[required_header_auth_parameter],
     responses={
         201: DiagramCopySerializer,
-        400: OpenApiResponse(description="Bad request"),
+        400: OpenApiResponse(description="JSON parse error"),
+        401: OpenApiResponse(description="Invalid token or token not provided"),
+        403: OpenApiResponse(description="Forbidden to copy this diagram"),
         404: OpenApiResponse(description="Diagram not found"),
     },
 )
