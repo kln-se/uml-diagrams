@@ -1,6 +1,6 @@
 # 1. What's inside?
 
-The application programming interface (API) of a web-based application which is designed to handle the processing of UML diagrams.
+The application programming interface (API) of a web-based application which is designed to handle the processing of UML diagrams in the form of JSON.
 
 The API supports:
 1. Store, retrieve, update and delete created UML diagrams;

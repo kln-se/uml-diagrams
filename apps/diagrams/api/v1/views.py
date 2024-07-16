@@ -5,7 +5,7 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from apps.authentication.api.v1.permissions import IsAdminOrIsOwner
+from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
 from apps.diagrams.api.v1.serializers import DiagramCopySerializer, DiagramSerializer
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram

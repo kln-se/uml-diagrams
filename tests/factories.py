@@ -2,6 +2,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from apps.diagrams.models import Diagram
+from apps.users.constants import UserRoles
 from apps.users.models import User
 
 
@@ -11,6 +12,9 @@ class UserFactory(DjangoModelFactory):
 
     email = factory.Faker("email")
     password = factory.Faker("password")
+    first_name = factory.Faker("first_name")
+    last_name = factory.Faker("last_name")
+    role = factory.Iterator(UserRoles.CHOICES, getter=lambda x: x[0])
 
 
 class DiagramFactory(DjangoModelFactory):

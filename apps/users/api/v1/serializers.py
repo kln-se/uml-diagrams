@@ -26,7 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "email", "password", "first_name", "last_name", "role"]
-        read_only_fields = ["id", "role"]
 
     def update(self, instance: User, validated_data: dict[str, str]) -> User:
         instance.email = validated_data.get("email", instance.email)
