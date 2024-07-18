@@ -3,9 +3,9 @@ from tests.factories import DiagramFactory
 
 
 class TestDiagramSerializer:
-    def test_diagram_serializer_data(self):
+    def test_diagram_serializer_correct_returned_data(self) -> None:
         """
-        GIVEN a random diagram
+        GIVEN a random diagram object
         WHEN serializer is called
         THEN check if serialized data is coincident with the diagram's data.
         """
@@ -22,12 +22,12 @@ class TestDiagramSerializer:
 
 
 class TestDiagramCopySerializer:
-    def test_diagram_copy_serializer_read_only_fields(self):
+    def test_diagram_copy_serializer_read_only_fields(self) -> None:
         """
-        GIVEN a random diagram
-        WHEN serializer is called with new values of read only fields
+        GIVEN a random diagram object
+        WHEN serializer is called with new values of read only fields to update diagram
         THEN check that the serializer is valid and the values of
-        these fields are not changed.
+        read only fields are not changed.
         """
         diagram = DiagramFactory()
         serializer = DiagramCopySerializer(

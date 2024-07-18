@@ -3,7 +3,7 @@ from django.urls import resolve, reverse
 from apps.diagrams.api.v1.views import DiagramCopyAPIView, DiagramViewSet
 
 
-def test_diagram_list_resolve():
+def test_diagram_list_resolve() -> None:
     """
     GIVEN a URL pattern name
     WHEN the `resolve()` function is called with the URL associated with the pattern
@@ -16,7 +16,7 @@ def test_diagram_list_resolve():
     assert resolver_match.view_name == "diagram-list"
 
 
-def test_diagram_detail_resolve():
+def test_diagram_detail_resolve() -> None:
     """
     GIVEN a URL pattern name
     WHEN the `resolve()` function is called with the URL associated with the pattern
@@ -29,7 +29,7 @@ def test_diagram_detail_resolve():
     assert resolver_match.view_name == "diagram-detail"
 
 
-def test_diagram_copy_resolve():
+def test_diagram_copy_resolve() -> None:
     """
     GIVEN a URL pattern name
     WHEN the `resolve()` function is called with the URL associated with the pattern

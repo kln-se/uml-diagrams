@@ -3,7 +3,7 @@ from django.urls import resolve, reverse
 from apps.users.api.v1.views import SignupUserAPIView, UserViewSet
 
 
-def test_signup_user_resolve():
+def test_signup_user_resolve() -> None:
     """
     GIVEN a URL pattern name
     WHEN the `resolve()` function is called with the URL associated with the pattern
@@ -16,7 +16,7 @@ def test_signup_user_resolve():
     assert resolver_match.view_name == "signup"
 
 
-def test_user_detail_resolve():
+def test_user_detail_resolve() -> None:
     """
     GIVEN a URL pattern name
     WHEN the `resolve()` function is called with the URL associated with the pattern
