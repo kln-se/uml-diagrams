@@ -31,7 +31,9 @@ class TestDiagramViewSet:
         WHEN get_queryset is called by admin
         THEN check that the queryset returns all diagrams.
         """
-        admin, another_user = UserFactory(role=UserRoles.ADMIN), UserFactory()
+        admin, another_user = UserFactory(role=UserRoles.ADMIN), UserFactory(
+            role=UserRoles.USER
+        )
         instance_1, instance_2 = DiagramFactory(owner=admin), DiagramFactory(
             owner=another_user
         )
@@ -39,7 +41,7 @@ class TestDiagramViewSet:
         request.user = admin
         viewset = DiagramViewSet(request=request)
         assert viewset.get_queryset().count() == 2
-        assert [instance_1, instance_2] == list(viewset.get_queryset())
+        assert list(viewset.get_queryset()) == [instance_1, instance_2]
 
     def test_object_returns_owner_diagram_for_user(self) -> None:
         """

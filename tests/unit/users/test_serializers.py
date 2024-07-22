@@ -2,7 +2,7 @@ import pytest
 from faker import Faker
 
 from apps.users.api.v1.serializers import SignupUserSerializer, UserSerializer
-from apps.users.constants import UserRoles
+from apps.users.constants import PASSWORD_MIN_LENGTH, UserRoles
 from apps.users.models import User
 from tests.factories import UserFactory
 
@@ -34,9 +34,15 @@ class TestUserSerializer:
         WHEN serializer is called with new password
         THEN check that password is changed.
         """
-        new_password = Faker().password()
+        new_password = Faker().password(
+            length=PASSWORD_MIN_LENGTH,
+            special_chars=True,
+            digits=True,
+            upper_case=True,
+            lower_case=True,
+        )
         serializer = UserSerializer(user, data={"password": new_password}, partial=True)
-        assert serializer.is_valid()
+        assert serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         assert instance.check_password(new_password)
 
@@ -70,10 +76,9 @@ class TestSignupUserSerializer:
             "role": user.role,
         }
 
-    @pytest.mark.xfail(reason="Due to password validation")
     def test_signup_user_serializer_input_data(self, user: User) -> None:
         """
-        GIVEN a random user trying to signup
+        GIVEN a random user trying to signup with valid data
         WHEN serializer is called
         THEN check that data serialized to user object correctly.
         """
@@ -93,18 +98,47 @@ class TestSignupUserSerializer:
         assert instance.first_name == user.first_name
         assert instance.last_name == user.last_name
 
+    @pytest.mark.parametrize(
+        ("password", "code"),
+        [
+            ("123aA.", "password_too_short"),
+            ("12345678aA", "password_missing_special_chars"),
+            ("12345678a.", "password_missing_uppercase"),
+            ("12345678A.", "password_missing_lowercase"),
+            ("aaaaaaaaA.", "password_missing_digit"),
+        ],
+    )
+    def test_signup_user_serializer_enabled_password_validators(
+        self, password: str, code: str
+    ) -> None:
+        """
+        GIVEN a random user trying to signup with invalid password
+        WHEN serializer is called
+        THEN check that password is not meet the requirements.
+        """
+        serializer = SignupUserSerializer(
+            data={
+                "email": Faker().email(),
+                "password": password,
+            }
+        )
+        assert not serializer.is_valid()
+        assert "password" in serializer.errors
+        assert serializer.errors["password"][0].code == code
+
     def test_signup_user_serializer_read_only_fields_in_input_data(self) -> None:
         """
         GIVEN a random user, who set `id` and `role` fields in request body
         WHEN serializer is called
         THEN check if through validation `role` was set to `user` and `id` is different.
         """
-        user_id = Faker().pyint()
+        faker_obj = Faker()
+        user_id = faker_obj.pyint()
         serializer = SignupUserSerializer(
             data={
                 "id": user_id,
-                "email": Faker().email(),
-                "password": Faker().password(),
+                "email": faker_obj.email(),
+                "password": faker_obj.password(),
                 "role": UserRoles.ADMIN,
             }
         )

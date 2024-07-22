@@ -10,7 +10,8 @@ class PasswordValidator:
     def validate_length(value: str, min_length: int = PASSWORD_MIN_LENGTH) -> str:
         if len(value) < min_length:
             raise serializers.ValidationError(
-                f"Password must be at least {min_length} characters long."
+                detail=f"Password must be at least {min_length} characters long.",
+                code="password_too_short",
             )
         return value
 
@@ -20,8 +21,9 @@ class PasswordValidator:
     ) -> str:
         if not any(char in special_chars for char in value):
             raise serializers.ValidationError(
-                f"Password must contain at least one special character: "
-                f"{special_chars}."
+                detail=f"Password must contain at least one special character: "
+                f"{special_chars}.",
+                code="password_missing_special_chars",
             )
         return value
 
@@ -29,7 +31,8 @@ class PasswordValidator:
     def validate_is_digit(value: str) -> str:
         if not any(char.isdigit() for char in value):
             raise serializers.ValidationError(
-                "Password must contain at least one digit."
+                detail="Password must contain at least one digit.",
+                code="password_missing_digit",
             )
         return value
 
@@ -37,7 +40,8 @@ class PasswordValidator:
     def validate_is_lowercase(value: str) -> str:
         if not any(char.islower() for char in value):
             raise serializers.ValidationError(
-                "Password must contain at least one lowercase letter."
+                detail="Password must contain at least one lowercase letter.",
+                code="password_missing_lowercase",
             )
         return value
 
@@ -45,7 +49,8 @@ class PasswordValidator:
     def validate_is_uppercase(value: str) -> str:
         if not any(char.isupper() for char in value):
             raise serializers.ValidationError(
-                "Password must contain at least one uppercase letter."
+                detail="Password must contain at least one uppercase letter.",
+                code="password_missing_uppercase",
             )
         return value
 
@@ -61,7 +66,8 @@ class PasswordValidator:
 
         if not re.match(pattern, value):
             raise serializers.ValidationError(
-                "Password must contain at least one lowercase letter, "
-                "one uppercase letter, one digit, and one special character."
+                detail="Password must contain at least one lowercase letter, "
+                "one uppercase letter, one digit, and one special character.",
+                code="password_too_simple",
             )
         return value

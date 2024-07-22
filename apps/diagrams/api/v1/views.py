@@ -102,7 +102,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
         - otherwise, return only the diagrams that belong to the user.
         """
         if self.request.user.is_admin:
-            return self.queryset
+            return Diagram.objects.all()
         return self.queryset.filter(owner=self.request.user)
 
     def perform_update(self, serializer: DiagramSerializer) -> None:
