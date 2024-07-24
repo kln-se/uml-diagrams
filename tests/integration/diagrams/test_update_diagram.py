@@ -76,7 +76,7 @@ def test_update_any_diagram_by_admin(client: APIClient, logged_in_admin: User) -
     """
     GIVEN an admin user and a diagram that belongs to another user
     WHEN he requests PUT /api/v1/diagrams/<diagram_id> with valid data
-    THEN check that the diagram is updated.
+    THEN check that the diagram was updated.
     """
     diagram_owned_by_another_user = DiagramFactory()
     faker_obj = Faker()

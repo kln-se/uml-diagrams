@@ -1,5 +1,5 @@
 PASSWORD_MIN_LENGTH = 8
-PASSWORD_SPECIAL_CHARS = '!@#$%^&*(),.?":{}|<>'
+PASSWORD_SPECIAL_CHARS = '!@#$%^&*()_+,.?":{}|<>'
 
 
 class UserRoles:

@@ -76,27 +76,32 @@ class TestSignupUserSerializer:
             "role": user.role,
         }
 
-    def test_signup_user_serializer_input_data(self, user: User) -> None:
+    def test_signup_user_serializer_input_data(self) -> None:
         """
         GIVEN a random user trying to signup with valid data
         WHEN serializer is called
         THEN check that data serialized to user object correctly.
         """
-        user.delete()  # factory adds user to db, so we need to delete it before test
-        serializer = SignupUserSerializer(  # user used just for fake data
-            data={
-                "email": user.email,
-                "password": user.password,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-            }
-        )
+        faker_obj = Faker()
+        user_data = {
+            "email": faker_obj.email(),
+            "password": faker_obj.password(
+                length=PASSWORD_MIN_LENGTH,
+                special_chars=True,
+                digits=True,
+                upper_case=True,
+                lower_case=True,
+            ),
+            "first_name": faker_obj.first_name(),
+            "last_name": faker_obj.last_name(),
+        }
+        serializer = SignupUserSerializer(data=user_data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.create(validated_data=serializer.validated_data)
-        assert instance.email == user.email
-        assert instance.check_password(user.password)
-        assert instance.first_name == user.first_name
-        assert instance.last_name == user.last_name
+        assert instance.email == user_data["email"]
+        assert instance.check_password(user_data["password"])
+        assert instance.first_name == user_data["first_name"]
+        assert instance.last_name == user_data["last_name"]
 
     @pytest.mark.parametrize(
         ("password", "code"),
