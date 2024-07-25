@@ -1,5 +1,5 @@
 from apps.authentication.api.v1.serializers import CustomAuthTokenSerializer
-from tests.factories import UserFactory
+from tests.factories import FakePassword, UserFactory
 
 
 def test_custom_auth_token_serializer_email_required_in_input() -> None:
@@ -8,10 +8,11 @@ def test_custom_auth_token_serializer_email_required_in_input() -> None:
     WHEN serializer is called
     THEN check that email field is required
     """
-    fake_user_data = UserFactory.build()
+    raw_password = FakePassword.generate()
+    fake_user_data = UserFactory.build(password=raw_password)
     user_credentials = {
         "username": fake_user_data.email,
-        "password": fake_user_data._raw_password,
+        "password": raw_password,
     }
     serializer = CustomAuthTokenSerializer(data=user_credentials)
     assert not serializer.is_valid()

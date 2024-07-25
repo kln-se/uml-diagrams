@@ -69,10 +69,11 @@ def test_update_myself_user_info(client: APIClient, logged_in_user: User) -> Non
     WHEN PUT /api/v1/users/me/ is requested
     THEN check that he receives 200 OK and his account data was updated
     """
-    fake_user_data = UserFactory.build()
+    raw_password = FakePassword.generate()
+    fake_user_data = UserFactory.build(password=raw_password)
     data_to_update = {
         "email": fake_user_data.email,
-        "password": fake_user_data._raw_password,
+        "password": raw_password,
         "first_name": fake_user_data.first_name,
         "last_name": fake_user_data.last_name,
     }

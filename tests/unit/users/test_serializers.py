@@ -76,10 +76,11 @@ class TestSignupUserSerializer:
         WHEN serializer is called
         THEN check that data serialized to user object correctly.
         """
-        fake_user_data = UserFactory.build()
+        raw_password = FakePassword.generate()
+        fake_user_data = UserFactory.build(password=raw_password)
         signup_data = {
             "email": fake_user_data.email,
-            "password": fake_user_data._raw_password,
+            "password": raw_password,
             "first_name": fake_user_data.first_name,
             "last_name": fake_user_data.last_name,
         }
@@ -127,11 +128,12 @@ class TestSignupUserSerializer:
         WHEN serializer is called
         THEN check if through validation `role` was set to `user` and `id` is different.
         """
-        fake_user_data = UserFactory.build(role=UserRoles.ADMIN)
+        raw_password = FakePassword.generate()
+        fake_user_data = UserFactory.build(role=UserRoles.ADMIN, password=raw_password)
         signup_data = {
             "id": Faker().pyint(),
             "email": fake_user_data.email,
-            "password": fake_user_data._raw_password,
+            "password": raw_password,
             "role": UserRoles.ADMIN,
         }
         serializer = SignupUserSerializer(data=signup_data)

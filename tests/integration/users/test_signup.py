@@ -14,10 +14,11 @@ def test_signup_user_with_valid_data(client: APIClient) -> None:
     WHEN POST /api/v1/signup/ is requested
     THEN check that user is created with valid data
     """
-    fake_user_data = UserFactory.build()
+    raw_password = FakePassword.generate()
+    fake_user_data = UserFactory.build(password=raw_password)
     signup_data = {
         "email": fake_user_data.email,
-        "password": fake_user_data._raw_password,
+        "password": raw_password,
         "first_name": fake_user_data.first_name,
         "last_name": fake_user_data.last_name,
     }
@@ -41,10 +42,11 @@ def test_signup_user_valid_role_granted(client: APIClient) -> None:
     WHEN POST /api/v1/signup/ is requested
     THEN check that user is created with valid role `user`
     """
-    fake_user_data = UserFactory.build()
+    raw_password = FakePassword.generate()
+    fake_user_data = UserFactory.build(password=raw_password)
     signup_data = {
         "email": fake_user_data.email,
-        "password": fake_user_data._raw_password,
+        "password": raw_password,
         "role": UserRoles.ADMIN,
     }
     response = client.post(
@@ -91,10 +93,11 @@ def test_signup_user_allowed_http_methods(client: APIClient, method: str) -> Non
     WHEN other than POST method for /api/v1/signup/ is requested
     THEN check that it returns 405 METHOD NOT ALLOWED
     """
-    fake_user_data = UserFactory.build()
+    raw_password = FakePassword.generate()
+    fake_user_data = UserFactory.build(password=raw_password)
     signup_data = {
         "email": fake_user_data.email,
-        "password": fake_user_data._raw_password,
+        "password": raw_password,
     }
     response = getattr(client, method)(
         path=SIGNUP_URL,

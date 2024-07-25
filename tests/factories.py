@@ -27,37 +27,15 @@ class FakePassword:
         return cls.faker_obj.password(**cls.default_password_options)
 
 
+DEFAULT_TEST_PASSWORD = FakePassword.generate()
+
+
 class UserFactory(DjangoModelFactory):
-
-    @staticmethod
-    def inject_random_generated_password(super_method, **kwargs):
-        """Inject a random generated password into the kwargs
-        if password was not provided. And add raw password value
-        to the user object.
-        """
-        password = kwargs.get("password")
-        if password is None:
-            password = FakePassword.generate()
-            kwargs["password"] = password
-        user = super_method(**kwargs)
-        user._raw_password = password
-        return user
-
-    @classmethod
-    def build(cls, **kwargs):
-        """Override build() method to generate and save the raw password value."""
-        return cls.inject_random_generated_password(super().build, **kwargs)
-
-    @classmethod
-    def create(cls, **kwargs):
-        """Override create() method to generate and save the raw password value."""
-        return cls.inject_random_generated_password(super().create, **kwargs)
-
     class Meta:
         model = User
 
     email = factory.Faker("email")
-    password = factory.django.Password(password=None)
+    password = factory.django.Password(password=DEFAULT_TEST_PASSWORD)
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     role = factory.Iterator(UserRoles.CHOICES, getter=lambda x: x[0])

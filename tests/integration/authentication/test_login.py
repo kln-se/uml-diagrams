@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
-from tests.factories import UserFactory
+from tests.factories import FakePassword, UserFactory
 from tests.integration.authentication.constants import LOGIN_URL
 
 
@@ -13,10 +13,11 @@ def test_login_with_valid_credentials(client: APIClient) -> None:
     WHEN POST api/v1/login is requested
     THEN check that user is authenticated.
     """
-    user = UserFactory()
+    raw_password = FakePassword.generate()
+    user = UserFactory(password=raw_password)
     user_credentials = {
         "email": user.email,
-        "password": user._raw_password,
+        "password": raw_password,
     }
     response = client.post(path=LOGIN_URL, data=user_credentials)
     assert response.status_code == status.HTTP_200_OK
@@ -32,10 +33,11 @@ def test_login_user_not_found(client: APIClient) -> None:
     WHEN POST api/v1/login is requested
     THEN check that user is not authenticated.
     """
-    fake_user_data = UserFactory.build()
+    raw_password = FakePassword.generate()
+    fake_user_data = UserFactory.build(password=raw_password)
     user_credentials = {
         "email": fake_user_data.email,
-        "password": fake_user_data._raw_password,
+        "password": raw_password,
     }
     response = client.post(path=LOGIN_URL, data=user_credentials)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -77,7 +79,8 @@ def test_login_allowed_http_methods(client: APIClient, method: str) -> None:
     WHEN other than POST method for /api/v1/login/ is requested
     THEN check that it returns 405 METHOD NOT ALLOWED
     """
-    user = UserFactory()
-    user_credentials = {"email": user.email, "password": user._raw_password}
+    raw_password = FakePassword.generate()
+    user = UserFactory(password=raw_password)
+    user_credentials = {"email": user.email, "password": raw_password}
     response = getattr(client, method)(path=LOGIN_URL, data=user_credentials)
     assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
