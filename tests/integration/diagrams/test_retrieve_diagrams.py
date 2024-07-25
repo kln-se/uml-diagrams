@@ -1,9 +1,8 @@
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.users.constants import UserRoles
 from apps.users.models import User
-from tests.factories import DiagramFactory, UserFactory
+from tests.factories import DiagramFactory
 from tests.integration.diagrams.constants import DIAGRAMS_URL
 
 
@@ -16,7 +15,7 @@ def test_retrieve_diagrams_visible_to_authenticated_owner(
     THEN he gets 2 diagrams and 200 OK is returned
     """
     diagrams_owned_by_user = [DiagramFactory(owner=logged_in_user) for _ in range(2)]
-    _ = DiagramFactory(owner=UserFactory())  # diagram not owned by user
+    _ = DiagramFactory()  # diagram owned by another user
     response = client.get(DIAGRAMS_URL)
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()) == len(diagrams_owned_by_user)
@@ -45,9 +44,7 @@ def test_retrieve_all_diagrams_by_admin(
     WHEN he requests GET /api/v1/diagrams/
     THEN he gets all 3 diagrams and 200 OK is returned
     """
-    diagrams_owned_by_some_user = [
-        DiagramFactory(owner=UserFactory(role=UserRoles.USER)) for _ in range(2)
-    ]
+    diagrams_owned_by_some_user = [DiagramFactory() for _ in range(2)]
     diagram_owned_by_admin = DiagramFactory(owner=logged_in_admin)
     all_diagrams = [*diagrams_owned_by_some_user, diagram_owned_by_admin]
     response = client.get(DIAGRAMS_URL)

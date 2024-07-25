@@ -3,9 +3,9 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.users.constants import PASSWORD_MIN_LENGTH, UserRoles
+from apps.users.constants import UserRoles
 from apps.users.models import User
-from tests.factories import UserFactory
+from tests.factories import FakePassword, UserFactory
 from tests.integration.users.constants import USER_DETAIL_URL
 
 
@@ -69,27 +69,23 @@ def test_update_myself_user_info(client: APIClient, logged_in_user: User) -> Non
     WHEN PUT /api/v1/users/me/ is requested
     THEN check that he receives 200 OK and his account data was updated
     """
-    faker_obj = Faker()
-    data_to_set = {
-        "email": faker_obj.email(),
-        "password": faker_obj.password(
-            length=PASSWORD_MIN_LENGTH,
-            special_chars=True,
-            digits=True,
-            upper_case=True,
-            lower_case=True,
-        ),
-        "first_name": faker_obj.first_name(),
-        "last_name": faker_obj.last_name(),
+    fake_user_data = UserFactory.build()
+    data_to_update = {
+        "email": fake_user_data.email,
+        "password": fake_user_data._raw_password,
+        "first_name": fake_user_data.first_name,
+        "last_name": fake_user_data.last_name,
     }
-    response = client.put(path=USER_DETAIL_URL, data=data_to_set)
+    response = client.put(path=USER_DETAIL_URL, data=data_to_update)
     assert response.status_code == status.HTTP_200_OK
     user = User.objects.get(pk=logged_in_user.pk)
     assert user.id == response.data["id"] == logged_in_user.pk
-    assert user.email == response.data["email"] == data_to_set["email"]
-    assert user.check_password(data_to_set["password"])
-    assert user.first_name == response.data["first_name"] == data_to_set["first_name"]
-    assert user.last_name == response.data["last_name"] == data_to_set["last_name"]
+    assert user.email == response.data["email"] == data_to_update["email"]
+    assert user.check_password(data_to_update["password"])
+    assert (
+        user.first_name == response.data["first_name"] == data_to_update["first_name"]
+    )
+    assert user.last_name == response.data["last_name"] == data_to_update["last_name"]
 
 
 @pytest.mark.parametrize(
@@ -97,17 +93,7 @@ def test_update_myself_user_info(client: APIClient, logged_in_user: User) -> Non
     [
         ("id", Faker().pyint(), False),
         ("email", Faker().email(), True),
-        (
-            "password",
-            Faker().password(
-                length=PASSWORD_MIN_LENGTH,
-                special_chars=True,
-                digits=True,
-                upper_case=True,
-                lower_case=True,
-            ),
-            True,
-        ),
+        ("password", FakePassword.generate(), True),
         ("first_name", Faker().first_name(), True),
         ("last_name", Faker().last_name(), True),
         ("role", UserRoles.ADMIN, False),
@@ -125,14 +111,14 @@ def test_partial_update_myself_user_info(
     WHEN PATCH /api/v1/users/me/ is requested
     THEN check that he receives 200 OK and his account data was updated
     """
-    data_to_set = {field_name: field_value}
-    response = client.patch(path=USER_DETAIL_URL, data=data_to_set)
+    data_to_update = {field_name: field_value}
+    response = client.patch(path=USER_DETAIL_URL, data=data_to_update)
     assert response.status_code == status.HTTP_200_OK
     user = User.objects.get(pk=logged_in_user.pk)
     if field_name == "password":
-        assert user.check_password(data_to_set[field_name])
+        assert user.check_password(data_to_update[field_name])
     else:
-        assert (getattr(user, field_name) == data_to_set[field_name]) == expected
+        assert (getattr(user, field_name) == data_to_update[field_name]) == expected
 
 
 def test_partial_update_myself_user_info_email_already_exists(
@@ -144,8 +130,8 @@ def test_partial_update_myself_user_info_email_already_exists(
     THEN check that he receives 400 BAD REQUEST
     """
     registered_user = UserFactory()
-    data_to_set = {"email": registered_user.email}
-    response = client.patch(path=USER_DETAIL_URL, data=data_to_set)
+    data_to_update = {"email": registered_user.email}
+    response = client.patch(path=USER_DETAIL_URL, data=data_to_update)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.data["email"][0].code == "unique"
     assert User.objects.filter(email=registered_user.email).count() == 1

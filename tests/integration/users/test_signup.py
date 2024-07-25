@@ -1,11 +1,10 @@
 import pytest
-from faker import Faker
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.users.constants import PASSWORD_MIN_LENGTH, UserRoles
+from apps.users.constants import UserRoles
 from apps.users.models import User
-from tests.factories import UserFactory
+from tests.factories import FakePassword, UserFactory
 from tests.integration.users.constants import SIGNUP_URL
 
 
@@ -15,18 +14,12 @@ def test_signup_user_with_valid_data(client: APIClient) -> None:
     WHEN POST /api/v1/signup/ is requested
     THEN check that user is created with valid data
     """
-    faker_obj = Faker()
+    fake_user_data = UserFactory.build()
     signup_data = {
-        "email": faker_obj.email(),
-        "password": faker_obj.password(
-            length=PASSWORD_MIN_LENGTH,
-            special_chars=True,
-            digits=True,
-            upper_case=True,
-            lower_case=True,
-        ),
-        "first_name": faker_obj.first_name(),
-        "last_name": faker_obj.last_name(),
+        "email": fake_user_data.email,
+        "password": fake_user_data._raw_password,
+        "first_name": fake_user_data.first_name,
+        "last_name": fake_user_data.last_name,
     }
     response = client.post(
         path=SIGNUP_URL,
@@ -48,10 +41,10 @@ def test_signup_user_valid_role_granted(client: APIClient) -> None:
     WHEN POST /api/v1/signup/ is requested
     THEN check that user is created with valid role `user`
     """
-    faker_obj = Faker()
+    fake_user_data = UserFactory.build()
     signup_data = {
-        "email": faker_obj.email(),
-        "password": faker_obj.password(),
+        "email": fake_user_data.email,
+        "password": fake_user_data._raw_password,
         "role": UserRoles.ADMIN,
     }
     response = client.post(
@@ -70,10 +63,9 @@ def test_signup_user_email_already_exists(client: APIClient) -> None:
     THEN check that user is not created
     """
     registered_user = UserFactory()
-    faker_obj = Faker()
     signup_data = {
         "email": registered_user.email,
-        "password": faker_obj.password(),
+        "password": FakePassword.generate(),
     }
     response = client.post(
         path=SIGNUP_URL,
@@ -99,10 +91,10 @@ def test_signup_user_allowed_http_methods(client: APIClient, method: str) -> Non
     WHEN other than POST method for /api/v1/signup/ is requested
     THEN check that it returns 405 METHOD NOT ALLOWED
     """
-    faker_obj = Faker()
+    fake_user_data = UserFactory.build()
     signup_data = {
-        "email": faker_obj.email(),
-        "password": faker_obj.password(),
+        "email": fake_user_data.email,
+        "password": fake_user_data._raw_password,
     }
     response = getattr(client, method)(
         path=SIGNUP_URL,

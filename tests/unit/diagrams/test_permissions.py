@@ -13,11 +13,11 @@ def test_is_admin_or_is_owner_permission_granted_for_owner() -> None:
     THEN the permission is granted
     """
     permission = IsAdminOrIsOwner()
-    user = UserFactory(role=UserRoles.USER)
-    instance = DiagramFactory(owner=user)
     request = APIRequestFactory().get("/")
+    user = UserFactory(role=UserRoles.USER)
     request.user = user
-    assert permission.has_object_permission(request, APIView(), instance)
+    diagram_owned_by_user = DiagramFactory(owner=user)
+    assert permission.has_object_permission(request, APIView(), diagram_owned_by_user)
 
 
 def test_is_admin_or_is_owner_permission_not_granted_for_not_owner() -> None:
@@ -27,13 +27,13 @@ def test_is_admin_or_is_owner_permission_not_granted_for_not_owner() -> None:
     THEN the permission is not granted
     """
     permission = IsAdminOrIsOwner()
-    user, another_user = UserFactory(role=UserRoles.USER), UserFactory(
-        role=UserRoles.USER
-    )
-    instance = DiagramFactory(owner=another_user)
     request = APIRequestFactory().get("/")
+    user = UserFactory(role=UserRoles.USER)
     request.user = user
-    assert not permission.has_object_permission(request, APIView(), instance)
+    diagram_owned_by_another_user = DiagramFactory()
+    assert not permission.has_object_permission(
+        request, APIView(), diagram_owned_by_another_user
+    )
 
 
 def test_is_admin_or_is_owner_permission_granted_for_admin() -> None:
@@ -43,8 +43,10 @@ def test_is_admin_or_is_owner_permission_granted_for_admin() -> None:
     THEN the permission is granted
     """
     permission = IsAdminOrIsOwner()
-    admin, user = UserFactory(role=UserRoles.ADMIN), UserFactory(role=UserRoles.USER)
-    instance = DiagramFactory(owner=user)
     request = APIRequestFactory().get("/")
+    admin = UserFactory(role=UserRoles.ADMIN)
     request.user = admin
-    assert permission.has_object_permission(request, APIView(), instance)
+    diagram_owned_by_another_user = DiagramFactory()
+    assert permission.has_object_permission(
+        request, APIView(), diagram_owned_by_another_user
+    )

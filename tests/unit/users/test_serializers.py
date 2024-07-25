@@ -4,7 +4,7 @@ from faker import Faker
 from apps.users.api.v1.serializers import SignupUserSerializer, UserSerializer
 from apps.users.constants import PASSWORD_MIN_LENGTH, UserRoles
 from apps.users.models import User
-from tests.factories import UserFactory
+from tests.factories import FakePassword, UserFactory
 
 
 @pytest.fixture
@@ -34,13 +34,7 @@ class TestUserSerializer:
         WHEN serializer is called with new password
         THEN check that password is changed.
         """
-        new_password = Faker().password(
-            length=PASSWORD_MIN_LENGTH,
-            special_chars=True,
-            digits=True,
-            upper_case=True,
-            lower_case=True,
-        )
+        new_password = FakePassword.generate()
         serializer = UserSerializer(user, data={"password": new_password}, partial=True)
         assert serializer.is_valid(raise_exception=True)
         instance = serializer.save()
@@ -82,35 +76,35 @@ class TestSignupUserSerializer:
         WHEN serializer is called
         THEN check that data serialized to user object correctly.
         """
-        faker_obj = Faker()
-        user_data = {
-            "email": faker_obj.email(),
-            "password": faker_obj.password(
-                length=PASSWORD_MIN_LENGTH,
-                special_chars=True,
-                digits=True,
-                upper_case=True,
-                lower_case=True,
-            ),
-            "first_name": faker_obj.first_name(),
-            "last_name": faker_obj.last_name(),
+        fake_user_data = UserFactory.build()
+        signup_data = {
+            "email": fake_user_data.email,
+            "password": fake_user_data._raw_password,
+            "first_name": fake_user_data.first_name,
+            "last_name": fake_user_data.last_name,
         }
-        serializer = SignupUserSerializer(data=user_data)
+        serializer = SignupUserSerializer(data=signup_data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.create(validated_data=serializer.validated_data)
-        assert instance.email == user_data["email"]
-        assert instance.check_password(user_data["password"])
-        assert instance.first_name == user_data["first_name"]
-        assert instance.last_name == user_data["last_name"]
+        assert instance.email == signup_data["email"]
+        assert instance.check_password(signup_data["password"])
+        assert instance.first_name == signup_data["first_name"]
+        assert instance.last_name == signup_data["last_name"]
 
     @pytest.mark.parametrize(
         ("password", "code"),
         [
-            ("123aA.", "password_too_short"),
-            ("12345678aA", "password_missing_special_chars"),
-            ("12345678a.", "password_missing_uppercase"),
-            ("12345678A.", "password_missing_lowercase"),
-            ("aaaaaaaaA.", "password_missing_digit"),
+            (
+                FakePassword.generate(length=PASSWORD_MIN_LENGTH - 1),
+                "password_too_short",
+            ),
+            (
+                FakePassword.generate(special_chars=False),
+                "password_missing_special_chars",
+            ),
+            (FakePassword.generate(upper_case=False), "password_missing_uppercase"),
+            (FakePassword.generate(lower_case=False), "password_missing_lowercase"),
+            (FakePassword.generate(digits=False), "password_missing_digit"),
         ],
     )
     def test_signup_user_serializer_enabled_password_validators(
@@ -121,12 +115,8 @@ class TestSignupUserSerializer:
         WHEN serializer is called
         THEN check that password is not meet the requirements.
         """
-        serializer = SignupUserSerializer(
-            data={
-                "email": Faker().email(),
-                "password": password,
-            }
-        )
+        signup_data = {"email": Faker().email(), "password": password}
+        serializer = SignupUserSerializer(data=signup_data)
         assert not serializer.is_valid()
         assert "password" in serializer.errors
         assert serializer.errors["password"][0].code == code
@@ -137,17 +127,15 @@ class TestSignupUserSerializer:
         WHEN serializer is called
         THEN check if through validation `role` was set to `user` and `id` is different.
         """
-        faker_obj = Faker()
-        user_id = faker_obj.pyint()
-        serializer = SignupUserSerializer(
-            data={
-                "id": user_id,
-                "email": faker_obj.email(),
-                "password": faker_obj.password(),
-                "role": UserRoles.ADMIN,
-            }
-        )
+        fake_user_data = UserFactory.build(role=UserRoles.ADMIN)
+        signup_data = {
+            "id": Faker().pyint(),
+            "email": fake_user_data.email,
+            "password": fake_user_data._raw_password,
+            "role": UserRoles.ADMIN,
+        }
+        serializer = SignupUserSerializer(data=signup_data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.create(validated_data=serializer.validated_data)
-        assert instance.pk != user_id
+        assert instance.pk != signup_data["id"]
         assert instance.role == UserRoles.USER

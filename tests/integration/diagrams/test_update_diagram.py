@@ -1,6 +1,5 @@
 from json import loads
 
-from faker import Faker
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -19,12 +18,12 @@ def test_update_diagram_by_authenticated_owner(
     THEN check that the diagram is updated.
     """
     diagram_owned_by_user = DiagramFactory(owner=logged_in_user)
-    faker_obj = Faker()
+    fake_diagram_data = DiagramFactory.build()
     data_to_update = {
-        "title": faker_obj.sentence(),
-        "description": faker_obj.text(),
-        "json": faker_obj.json(),
-        "created_at": faker_obj.date_time(),
+        "title": fake_diagram_data.title,
+        "description": fake_diagram_data.description,
+        "json": fake_diagram_data.json,
+        "created_at": fake_diagram_data.created_at,
     }
     response = client.put(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_user.id}/", data=data_to_update
@@ -55,11 +54,11 @@ def test_update_diagram_try_to_update_another_user_diagram(
     THEN check that the diagram is not updated.
     """
     diagram_owned_by_another_user = DiagramFactory()
-    faker_obj = Faker()
+    fake_diagram_data = DiagramFactory.build()
     data_to_update = {
-        "title": faker_obj.sentence(),
-        "description": faker_obj.text(),
-        "json": faker_obj.json(),
+        "title": fake_diagram_data.title,
+        "description": fake_diagram_data.description,
+        "json": fake_diagram_data.json,
     }
     response = client.put(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_another_user.id}/", data=data_to_update
@@ -79,11 +78,11 @@ def test_update_any_diagram_by_admin(client: APIClient, logged_in_admin: User) -
     THEN check that the diagram was updated.
     """
     diagram_owned_by_another_user = DiagramFactory()
-    faker_obj = Faker()
+    fake_diagram_data = DiagramFactory.build()
     data_to_update = {
-        "title": faker_obj.sentence(),
-        "description": faker_obj.text(),
-        "json": faker_obj.json(),
+        "title": fake_diagram_data.title,
+        "description": fake_diagram_data.description,
+        "json": fake_diagram_data.json,
         "owner": logged_in_admin.id,  # Change current owner
     }
     response = client.put(
