@@ -10,7 +10,7 @@ def test_retrieve_diagrams_visible_to_authenticated_owner(
     client: APIClient, logged_in_user: User
 ) -> None:
     """
-    GIVEN a logged in user who owns 2 diagrams of 3
+    GIVEN a logged-in user who owns 2 diagrams of 3
     WHEN he requests GET /api/v1/diagrams/
     THEN he gets 2 diagrams and 200 OK is returned
     """
@@ -22,7 +22,7 @@ def test_retrieve_diagrams_visible_to_authenticated_owner(
     data = response.json()
     for idx, diagram_owned_by_user in enumerate(diagrams_owned_by_user):
         diagram_data_as_dict = {
-            "id": diagram_owned_by_user.id,
+            "id": str(diagram_owned_by_user.id),
             "title": diagram_owned_by_user.title,
             "json": diagram_owned_by_user.json,
             "description": diagram_owned_by_user.description,
@@ -53,7 +53,7 @@ def test_retrieve_all_diagrams_by_admin(
     data = response.json()
     for idx, diagram in enumerate(all_diagrams):
         diagram_data_as_dict = {
-            "id": diagram.id,
+            "id": str(diagram.id),
             "title": diagram.title,
             "json": diagram.json,
             "description": diagram.description,

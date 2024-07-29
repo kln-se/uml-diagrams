@@ -1,10 +1,13 @@
 from rest_framework import serializers
 
 from apps.diagrams.models import Diagram
+from apps.users.models import User
 
 
 class DiagramSerializer(serializers.ModelSerializer):
-    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    owner = serializers.PrimaryKeyRelatedField(
+        write_only=True, required=False, queryset=User.objects.all()
+    )
 
     class Meta:
         model = Diagram

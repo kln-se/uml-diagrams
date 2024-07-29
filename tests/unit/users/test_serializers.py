@@ -131,7 +131,7 @@ class TestSignupUserSerializer:
         raw_password = FakePassword.generate()
         fake_user_data = UserFactory.build(role=UserRoles.ADMIN, password=raw_password)
         signup_data = {
-            "id": Faker().pyint(),
+            "id": Faker().uuid4(),
             "email": fake_user_data.email,
             "password": raw_password,
             "role": UserRoles.ADMIN,

@@ -1,3 +1,5 @@
+import uuid
+
 from django.urls import resolve, reverse
 
 from apps.diagrams.api.v1.views import DiagramCopyAPIView, DiagramViewSet
@@ -37,6 +39,7 @@ def test_diagram_copy_resolve() -> None:
         - the appropriate view is returned;
         - resolver points to the view with the correct URL pattern name.
     """
-    resolver_match = resolve(reverse("diagram-copy", args=[1]))
+    uuid_pk = uuid.uuid4()
+    resolver_match = resolve(reverse("diagram-copy", args=[uuid_pk]))
     assert resolver_match.func.cls == DiagramCopyAPIView
     assert resolver_match.view_name == "diagram-copy"

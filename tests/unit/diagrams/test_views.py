@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.test import APIRequestFactory
 
 from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
-from apps.diagrams.api.v1.serializers import DiagramCopySerializer
+from apps.diagrams.api.v1.serializers import DiagramCopySerializer, DiagramSerializer
 from apps.diagrams.api.v1.views import DiagramCopyAPIView, DiagramViewSet
 from apps.users.constants import UserRoles
 from tests.factories import DiagramFactory, UserFactory
@@ -109,10 +109,11 @@ class TestDiagramViewSet:
         diagram_owned_by_user = DiagramFactory(owner=user)
         request = APIRequestFactory()
         request.user = user
+        request.data = {"owner": another_user.id}
         viewset = DiagramViewSet(
             request=request, kwargs={"pk": diagram_owned_by_user.id}
         )
-        serializer = DiagramCopySerializer(diagram_owned_by_user, data={}, partial=True)
+        serializer = DiagramSerializer(diagram_owned_by_user, data={}, partial=True)
         serializer.is_valid()
         viewset.perform_update(serializer)
         assert serializer.instance.owner != another_user
@@ -132,7 +133,7 @@ class TestDiagramViewSet:
         viewset = DiagramViewSet(
             request=request, kwargs={"pk": diagram_owned_by_another_user.id}
         )
-        serializer = DiagramCopySerializer(
+        serializer = DiagramSerializer(
             diagram_owned_by_another_user, data={}, partial=True
         )
         serializer.is_valid()

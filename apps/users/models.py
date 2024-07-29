@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -6,8 +8,9 @@ from apps.users.managers import UserManager
 
 
 class User(AbstractUser):
-    email: str = models.EmailField(unique=True)
-    role: str = models.CharField(
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField(unique=True)
+    role = models.CharField(
         max_length=32, choices=UserRoles.CHOICES, default=UserRoles.USER
     )
     USERNAME_FIELD = "email"

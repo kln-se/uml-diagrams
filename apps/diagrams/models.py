@@ -1,8 +1,11 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
 
 class Diagram(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(
         max_length=255, null=False, blank=False, verbose_name="Diagram title"
     )

@@ -107,19 +107,14 @@ class DiagramViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer: DiagramSerializer) -> None:
         """
-        If the user is an admin the diagram owner field can be set to any user,
-        otherwise owner is set to the authenticated user.
+        If the user has admin permissions,
+        the diagram owner field can be set to any user,
+        otherwise owner field is remained unchanged.
         """
-        if self.request.user.is_admin:
-            owner_id = self.request.data.get("owner")
-            owner = (
-                get_user_model().objects.get(id=owner_id)
-                if owner_id
-                else self.request.user
-            )
-            serializer.save(owner=owner)
-        else:
-            super().perform_update(serializer)
+        owner = serializer.instance.owner
+        if self.request.data.get("owner") and self.request.user.is_admin:
+            owner = get_user_model().objects.get(id=self.request.data.get("owner"))
+        serializer.save(owner=owner)
 
 
 # region @extend_schema
@@ -128,8 +123,8 @@ class DiagramViewSet(viewsets.ModelViewSet):
     summary="Create a copy of an existing diagram",
     description="This API endpoint allows you to create a copy of an existing diagram. "
     "Copied diagram will have the same content as the original one, \
-                but a different title. New diagram description can be provided. \
-                The owner of the copied diagram will be the authenticated user.",
+    but a different title. New diagram description can be provided. \
+    The owner of the copied diagram will be the authenticated user.",
     parameters=[required_header_auth_parameter],
     responses={
         201: DiagramCopySerializer,

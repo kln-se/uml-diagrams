@@ -92,7 +92,7 @@ def test_update_myself_user_info(client: APIClient, logged_in_user: User) -> Non
 @pytest.mark.parametrize(
     ("field_name", "field_value", "expected"),
     [
-        ("id", Faker().pyint(), False),
+        ("id", Faker().uuid4(), False),
         ("email", Faker().email(), True),
         ("password", FakePassword.generate(), True),
         ("first_name", Faker().first_name(), True),
