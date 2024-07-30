@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
-from rest_framework import generics, viewsets
+from rest_framework import filters, generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
@@ -98,6 +98,9 @@ class DiagramViewSet(viewsets.ModelViewSet):
     queryset: QuerySet[Diagram] = Diagram.objects.all()
     serializer_class = DiagramSerializer
     permission_classes = [IsAuthenticated, IsAdminOrIsOwner]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["title", "owner_email", "created_at", "updated_at"]
+    ordering = ["-updated_at"]
 
     def get_queryset(self) -> QuerySet[Diagram]:
         """

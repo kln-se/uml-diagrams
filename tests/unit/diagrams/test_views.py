@@ -1,5 +1,6 @@
 import pytest
 from django.http.response import Http404
+from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.test import APIRequestFactory
 
@@ -15,7 +16,7 @@ from tests.factories import DiagramFactory, UserFactory
 
 
 class TestDiagramViewSet:
-    def test_queryset_returns_owner_diagrams_for_user(self) -> None:
+    def test_get_queryset_returns_owner_diagrams_for_user(self) -> None:
         """
         GIVEN a user who owns one diagram and another user who owns another diagram
         WHEN get_queryset is called by user
@@ -29,7 +30,7 @@ class TestDiagramViewSet:
         assert viewset.get_queryset().count() == 1
         assert viewset.get_queryset().first() == diagram_owned_by_user
 
-    def test_queryset_returns_all_diagrams_for_admin(self) -> None:
+    def test_get_queryset_returns_all_diagrams_for_admin(self) -> None:
         """
         GIVEN an admin user
         WHEN get_queryset is called by admin
@@ -49,22 +50,23 @@ class TestDiagramViewSet:
             diagram_owned_by_another_user,
         ]
 
-    def test_object_returns_owner_diagram_for_user(self) -> None:
+    def test_get_object_returns_owner_diagram_for_user(self) -> None:
         """
         GIVEN a user who owns one diagram
-        WHEN get_object is called by user
+        WHEN get_object() is called by user
         THEN check that the object returns the diagram that belongs to the user.
         """
         user = UserFactory(role=UserRoles.USER)
         diagram_owned_by_user, _ = DiagramFactory(owner=user), DiagramFactory()
         request = APIRequestFactory()
         request.user = user
+        request.query_params = {}
         viewset = DiagramViewSet(
             request=request, kwargs={"pk": diagram_owned_by_user.id}
         )
         assert viewset.get_object() == diagram_owned_by_user
 
-    def test_object_does_not_return_other_diagram_for_user(self) -> None:
+    def test_get_object_does_not_return_other_diagram_for_user(self) -> None:
         """
         GIVEN user without diagrams and a diagram that belongs to another user
         WHEN get_object is called by user
@@ -75,13 +77,14 @@ class TestDiagramViewSet:
         diagram_owned_by_another_user = DiagramFactory()
         request = APIRequestFactory()
         request.user = user
+        request.query_params = {}
         viewset = DiagramViewSet(
             request=request, kwargs={"pk": diagram_owned_by_another_user.id}
         )
         with pytest.raises(Http404):
             viewset.get_object()
 
-    def test_object_returns_any_diagram_for_admin(self) -> None:
+    def test_get_object_returns_any_diagram_for_admin(self) -> None:
         """
         GIVEN an admin user
         WHEN get_object is called by admin
@@ -94,6 +97,7 @@ class TestDiagramViewSet:
         )
         request = APIRequestFactory()
         request.user = admin
+        request.query_params = {}
         viewset = DiagramViewSet(
             request=request, kwargs={"pk": diagram_owned_by_admin.id}
         )
@@ -204,6 +208,17 @@ class TestDiagramViewSet:
     def test_permission_class_correct(self) -> None:
         viewset = DiagramViewSet()
         assert viewset.permission_classes == [IsAuthenticated, IsAdminOrIsOwner]
+
+    def test_viewset_ordering_options_correct(self) -> None:
+        viewset = DiagramViewSet()
+        assert viewset.filter_backends == [filters.OrderingFilter]
+        assert viewset.ordering_fields == [
+            "title",
+            "owner_email",
+            "created_at",
+            "updated_at",
+        ]
+        assert viewset.ordering == ["-updated_at"]
 
 
 class TestDiagramCopyAPIView:

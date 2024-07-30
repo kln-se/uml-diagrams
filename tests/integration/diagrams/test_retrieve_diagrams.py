@@ -16,7 +16,8 @@ def test_retrieve_diagrams_visible_to_authenticated_owner(
     """
     diagrams_owned_by_user = [DiagramFactory(owner=logged_in_user) for _ in range(2)]
     _ = DiagramFactory()  # diagram owned by another user
-    response = client.get(DIAGRAMS_URL)
+    ordering_url_param = "?ordering=created_at"
+    response = client.get(f"{DIAGRAMS_URL}{ordering_url_param}")
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()) == len(diagrams_owned_by_user)
     data = response.json()
@@ -47,7 +48,8 @@ def test_retrieve_all_diagrams_by_admin(
     diagrams_owned_by_some_user = [DiagramFactory() for _ in range(2)]
     diagram_owned_by_admin = DiagramFactory(owner=logged_in_admin)
     all_diagrams = [*diagrams_owned_by_some_user, diagram_owned_by_admin]
-    response = client.get(DIAGRAMS_URL)
+    ordering_url_param = "?ordering=created_at"
+    response = client.get(f"{DIAGRAMS_URL}{ordering_url_param}")
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()) == len(all_diagrams)
     data = response.json()
