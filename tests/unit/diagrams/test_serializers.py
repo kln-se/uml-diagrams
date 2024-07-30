@@ -1,6 +1,10 @@
 import pytest
 
-from apps.diagrams.api.v1.serializers import DiagramCopySerializer, DiagramSerializer
+from apps.diagrams.api.v1.serializers import (
+    DiagramCopySerializer,
+    DiagramListSerializer,
+    DiagramSerializer,
+)
 from apps.diagrams.models import Diagram
 from tests.factories import DiagramFactory
 
@@ -20,6 +24,8 @@ class TestDiagramSerializer:
         serializer = DiagramSerializer(diagram)
         assert serializer.data == {
             "id": str(diagram.id),
+            "owner_id": diagram.owner.id,
+            "owner_email": diagram.owner.email,
             "title": diagram.title,
             "json": diagram.json,
             "description": diagram.description,
@@ -34,10 +40,10 @@ class TestDiagramSerializer:
         THEN check that the serializer is not valid.
         """
         serializer = DiagramSerializer(
-            diagram, data={"owner": "invalid_id"}, partial=True
+            diagram, data={"owner_id": "invalid_id"}, partial=True
         )
         assert not serializer.is_valid()
-        assert "owner" in serializer.errors
+        assert "owner_id" in serializer.errors
 
 
 class TestDiagramCopySerializer:
@@ -57,3 +63,23 @@ class TestDiagramCopySerializer:
         instance = serializer.save()
         assert instance.title == diagram.title
         assert instance.json == diagram.json
+
+
+class TestDiagramListSerializer:
+    def test_diagram_list_serializer_correct_returned_data(
+        self, diagram: Diagram
+    ) -> None:
+        """
+        GIVEN a random diagram object
+        WHEN serializer is called
+        THEN check if serialized data is coincident with the diagram's data.
+        """
+        serializer = DiagramListSerializer(diagram)
+        assert serializer.data == {
+            "id": str(diagram.id),
+            "title": diagram.title,
+            "owner_id": diagram.owner.id,
+            "owner_email": diagram.owner.email,
+            "created_at": diagram.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": diagram.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        }

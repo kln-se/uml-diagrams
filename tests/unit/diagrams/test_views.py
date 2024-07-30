@@ -4,7 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.test import APIRequestFactory
 
 from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
-from apps.diagrams.api.v1.serializers import DiagramCopySerializer, DiagramSerializer
+from apps.diagrams.api.v1.serializers import (
+    DiagramCopySerializer,
+    DiagramListSerializer,
+    DiagramSerializer,
+)
 from apps.diagrams.api.v1.views import DiagramCopyAPIView, DiagramViewSet
 from apps.users.constants import UserRoles
 from tests.factories import DiagramFactory, UserFactory
@@ -114,7 +118,7 @@ class TestDiagramViewSet:
             request=request, kwargs={"pk": diagram_owned_by_user.id}
         )
         serializer = DiagramSerializer(diagram_owned_by_user, data={}, partial=True)
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         viewset.perform_update(serializer)
         assert serializer.instance.owner != another_user
         assert serializer.instance.owner == user
@@ -136,9 +140,66 @@ class TestDiagramViewSet:
         serializer = DiagramSerializer(
             diagram_owned_by_another_user, data={}, partial=True
         )
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         viewset.perform_update(serializer)
         assert serializer.instance.owner == admin
+
+    def test_perform_create_user_cannot_set_owner_while_creating_diagram(self) -> None:
+        """
+        GIVEN a user who tries to set another user as owner while creating diagram
+        WHEN perform_create() is called
+        THEN check that the owner is set to himself.
+        """
+        user, another_user = UserFactory(role=UserRoles.USER), UserFactory()
+        fake_diagram_data = DiagramFactory.build()
+        request = APIRequestFactory()
+        request.user = user
+        request.data = {
+            "title": fake_diagram_data.title,
+            "description": fake_diagram_data.description,
+            "json": fake_diagram_data.json,
+            "owner": another_user.id,
+        }
+        viewset = DiagramViewSet(request=request)
+        serializer = DiagramSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        viewset.perform_create(serializer)
+        assert serializer.instance.owner != another_user
+        assert serializer.instance.owner == user
+
+    def test_perform_create_admin_can_set_owner_while_creating_diagram(self) -> None:
+        """
+        GIVEN an admn who tries to set another user as owner while creating diagram
+        WHEN perform_create() is called
+        THEN check that the owner is set to another user.
+        """
+        admin, another_user = UserFactory(role=UserRoles.ADMIN), UserFactory()
+        fake_diagram_data = DiagramFactory.build()
+        request = APIRequestFactory()
+        request.user = admin
+        request.data = {
+            "title": fake_diagram_data.title,
+            "description": fake_diagram_data.description,
+            "json": fake_diagram_data.json,
+            "owner": another_user.id,
+        }
+        viewset = DiagramViewSet(request=request)
+        serializer = DiagramSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        viewset.perform_create(serializer)
+        assert serializer.instance.owner == another_user
+
+    @pytest.mark.parametrize(
+        ("action", "serializer_class"),
+        [("list", DiagramListSerializer), ("retrieve", DiagramSerializer)],
+    )
+    def test_get_serializer_class_correct(
+        self, action: str, serializer_class: DiagramSerializer
+    ) -> None:
+        request = APIRequestFactory().get("/")
+        viewset = DiagramViewSet(request=request)
+        viewset.action = action
+        assert viewset.get_serializer_class() == serializer_class
 
     def test_permission_class_correct(self) -> None:
         viewset = DiagramViewSet()

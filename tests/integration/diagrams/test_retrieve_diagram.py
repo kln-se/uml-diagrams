@@ -20,6 +20,8 @@ def test_retrieve_diagram_by_authenticated_owner(
     diagram_data_as_dict = {
         "id": str(diagram_owned_by_user.id),
         "title": diagram_owned_by_user.title,
+        "owner_id": str(diagram_owned_by_user.owner.id),
+        "owner_email": diagram_owned_by_user.owner.email,
         "json": diagram_owned_by_user.json,
         "description": diagram_owned_by_user.description,
         "created_at": diagram_owned_by_user.created_at.strftime(
@@ -59,6 +61,8 @@ def test_retrieve_diagram_admin_can_retrieve_any_diagram(
     diagram_data_as_dict = {
         "id": str(diagram_owned_by_another_user.id),
         "title": diagram_owned_by_another_user.title,
+        "owner_id": str(diagram_owned_by_another_user.owner.id),
+        "owner_email": diagram_owned_by_another_user.owner.email,
         "json": diagram_owned_by_another_user.json,
         "description": diagram_owned_by_another_user.description,
         "created_at": diagram_owned_by_another_user.created_at.strftime(

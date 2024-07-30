@@ -145,8 +145,8 @@ class DiagramViewSet(viewsets.ModelViewSet):
     "Copied diagram will have the same content as the original one, \
     but a different title. New diagram description can be provided. \
     The owner of the copied diagram will be the authenticated user. \
-    Id parmeter should be provided **with minus sign** in the following UUID format: \
-    **123e4567-e89b-12d3-a456-426614174000**.",
+    Parameter **id** should be provided **with minus sign** \
+    in the following UUID format: **123e4567-e89b-12d3-a456-426614174000**.",
     parameters=[required_header_auth_parameter],
     responses={
         201: DiagramCopySerializer,
