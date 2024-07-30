@@ -6,7 +6,11 @@ from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
-from apps.diagrams.api.v1.serializers import DiagramCopySerializer, DiagramSerializer
+from apps.diagrams.api.v1.serializers import (
+    DiagramCopySerializer,
+    DiagramListSerializer,
+    DiagramSerializer,
+)
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
 from docs.api.templates.parameters import required_header_auth_parameter
@@ -116,6 +120,22 @@ class DiagramViewSet(viewsets.ModelViewSet):
             owner = get_user_model().objects.get(id=self.request.data.get("owner"))
         serializer.save(owner=owner)
 
+    def perform_create(self, serializer: DiagramSerializer) -> None:
+        """
+        If the user has admin permissions,
+        the diagram owner field can be set to any user,
+        otherwise owner field is remained unchanged.
+        """
+        owner = self.request.user
+        if self.request.user.is_admin:
+            owner = get_user_model().objects.get(id=self.request.data.get("owner"))
+        serializer.save(owner=owner)
+
+    def get_serializer_class(self):
+        if self.request.method == "GET" and self.action == "list":
+            return DiagramListSerializer
+        return super().get_serializer_class()
+
 
 # region @extend_schema
 @extend_schema(
@@ -124,7 +144,9 @@ class DiagramViewSet(viewsets.ModelViewSet):
     description="This API endpoint allows you to create a copy of an existing diagram. "
     "Copied diagram will have the same content as the original one, \
     but a different title. New diagram description can be provided. \
-    The owner of the copied diagram will be the authenticated user.",
+    The owner of the copied diagram will be the authenticated user. \
+    Id parmeter should be provided **with minus sign** in the following UUID format: \
+    **123e4567-e89b-12d3-a456-426614174000**.",
     parameters=[required_header_auth_parameter],
     responses={
         201: DiagramCopySerializer,
