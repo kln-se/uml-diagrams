@@ -5,6 +5,7 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_
 from rest_framework import filters, generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
 from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
 from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
@@ -98,6 +99,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
     queryset: QuerySet[Diagram] = Diagram.objects.all()
     serializer_class = DiagramSerializer
     permission_classes = [IsAuthenticated, IsAdminOrIsOwner]
+    pagination_class = DiagramViewSetPagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["title", "owner_email", "created_at", "updated_at"]
     ordering = ["-updated_at"]

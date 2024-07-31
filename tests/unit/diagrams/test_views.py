@@ -4,6 +4,7 @@ from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.test import APIRequestFactory
 
+from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
 from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
 from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
@@ -219,6 +220,10 @@ class TestDiagramViewSet:
             "updated_at",
         ]
         assert viewset.ordering == ["-updated_at"]
+
+    def test_viewset_pagination_class_correct(self) -> None:
+        viewset = DiagramViewSet()
+        assert viewset.pagination_class == DiagramViewSetPagination
 
 
 class TestDiagramCopyAPIView:

@@ -19,8 +19,9 @@ def test_retrieve_diagrams_visible_to_authenticated_owner(
     ordering_url_param = "?ordering=created_at"
     response = client.get(f"{DIAGRAMS_URL}{ordering_url_param}")
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == len(diagrams_owned_by_user)
     data = response.json()
+    results = data["results"]
+    assert len(results) == len(diagrams_owned_by_user)
     for idx, diagram_owned_by_user in enumerate(diagrams_owned_by_user):
         diagram_data_as_dict = {
             "id": str(diagram_owned_by_user.id),
@@ -34,7 +35,7 @@ def test_retrieve_diagrams_visible_to_authenticated_owner(
                 "%Y-%m-%dT%H:%M:%S.%fZ"
             ),
         }
-        assert data[idx] == diagram_data_as_dict
+        assert results[idx] == diagram_data_as_dict
 
 
 def test_retrieve_all_diagrams_by_admin(
@@ -51,8 +52,9 @@ def test_retrieve_all_diagrams_by_admin(
     ordering_url_param = "?ordering=created_at"
     response = client.get(f"{DIAGRAMS_URL}{ordering_url_param}")
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == len(all_diagrams)
     data = response.json()
+    results = data["results"]
+    assert len(results) == len(all_diagrams)
     for idx, diagram in enumerate(all_diagrams):
         diagram_data_as_dict = {
             "id": str(diagram.id),
@@ -62,4 +64,4 @@ def test_retrieve_all_diagrams_by_admin(
             "created_at": diagram.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "updated_at": diagram.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }
-        assert data[idx] == diagram_data_as_dict
+        assert results[idx] == diagram_data_as_dict
