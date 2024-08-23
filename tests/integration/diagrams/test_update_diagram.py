@@ -83,7 +83,7 @@ def test_update_any_diagram_by_admin(client: APIClient, logged_in_admin: User) -
         "title": fake_diagram_data.title,
         "description": fake_diagram_data.description,
         "json": fake_diagram_data.json,
-        "owner": logged_in_admin.id,  # Change current owner
+        "owner_id": logged_in_admin.id,  # Change current owner
     }
     response = client.put(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_another_user.id}/", data=data_to_update

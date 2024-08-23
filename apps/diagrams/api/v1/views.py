@@ -117,24 +117,24 @@ class DiagramViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer: DiagramSerializer) -> None:
         """
         If the user has admin permissions,
-        the diagram owner field can be set to any user,
-        otherwise owner field is remained unchanged.
+        the diagram owner_id field can be set to any user,
+        otherwise owner_id field is remained unchanged.
         """
         owner = serializer.instance.owner
-        if self.request.data.get("owner") and self.request.user.is_admin:
-            owner = get_user_model().objects.get(id=self.request.data.get("owner"))
-        serializer.save(owner=owner)
+        if self.request.data.get("owner_id") and self.request.user.is_admin:
+            owner = get_user_model().objects.get(id=self.request.data.get("owner_id"))
+        serializer.save(owner_id=owner.id)
 
     def perform_create(self, serializer: DiagramSerializer) -> None:
         """
         If the user has admin permissions,
-        the diagram owner field can be set to any user,
-        otherwise owner field is remained unchanged.
+        the diagram owner_id field can be set to any user,
+        otherwise owner_id field is remained unchanged.
         """
         owner = self.request.user
-        if self.request.user.is_admin:
-            owner = get_user_model().objects.get(id=self.request.data.get("owner"))
-        serializer.save(owner=owner)
+        if self.request.data.get("owner_id") and self.request.user.is_admin:
+            owner = get_user_model().objects.get(id=self.request.data.get("owner_id"))
+        serializer.save(owner_id=owner.id)
 
     def get_serializer_class(self):
         if self.request.method == "GET" and self.action == "list":

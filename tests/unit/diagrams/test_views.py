@@ -118,7 +118,7 @@ class TestDiagramViewSet:
         diagram_owned_by_user = DiagramFactory(owner=user)
         request = APIRequestFactory()
         request.user = user
-        request.data = {"owner": another_user.id}
+        request.data = {"owner_id": another_user.id}
         viewset = DiagramViewSet(
             request=request, kwargs={"pk": diagram_owned_by_user.id}
         )
@@ -138,7 +138,7 @@ class TestDiagramViewSet:
         diagram_owned_by_another_user = DiagramFactory()
         request = APIRequestFactory()
         request.user = admin
-        request.data = {"owner": admin.id}
+        request.data = {"owner_id": admin.id}
         viewset = DiagramViewSet(
             request=request, kwargs={"pk": diagram_owned_by_another_user.id}
         )
@@ -163,7 +163,7 @@ class TestDiagramViewSet:
             "title": fake_diagram_data.title,
             "description": fake_diagram_data.description,
             "json": fake_diagram_data.json,
-            "owner": another_user.id,
+            "owner_id": another_user.id,
         }
         viewset = DiagramViewSet(request=request)
         serializer = DiagramSerializer(data=request.data)
@@ -186,7 +186,7 @@ class TestDiagramViewSet:
             "title": fake_diagram_data.title,
             "description": fake_diagram_data.description,
             "json": fake_diagram_data.json,
-            "owner": another_user.id,
+            "owner_id": another_user.id,
         }
         viewset = DiagramViewSet(request=request)
         serializer = DiagramSerializer(data=request.data)

@@ -58,7 +58,7 @@ def test_partial_update_diagram_owner_by_authenticated_owner(
     """
     another_user = UserFactory()
     diagram_owned_by_user = DiagramFactory(owner=logged_in_user)
-    data_to_update = {"owner": another_user.id}
+    data_to_update = {"owner_id": another_user.id}
     response = client.patch(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_user.id}/", data=data_to_update
     )
@@ -96,7 +96,7 @@ def test_partial_update_diagram_try_to_partial_update_another_user_diagram(
         ("title", Faker().sentence(), True),
         ("description", Faker().text(), True),
         ("json", Faker().json(), True),
-        ("owner", None, True),  # will be changed to logged_in_admin
+        ("owner_id", None, True),  # will be changed to logged_in_admin
         ("updated_at", Faker().date_time(), False),
         ("created_at", Faker().date_time(), False),
     ],
@@ -115,17 +115,15 @@ def test_partial_update_any_diagram_by_admin(
     """
     diagram_owned_by_user = DiagramFactory()
     data_to_update = {
-        field_name: field_value if field_name != "owner" else logged_in_admin.id
+        field_name: field_value if field_name != "owner_id" else logged_in_admin.id
     }
     response = client.patch(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_user.id}/", data=data_to_update
     )
     assert response.status_code == status.HTTP_200_OK
     diagram = Diagram.objects.get(id=response.data["id"])
-    if field_name == "owner":
-        assert (
-            getattr(diagram, field_name).id == data_to_update[field_name]
-        ) == expected
+    if field_name == "owner_id":
+        assert (getattr(diagram, field_name) == data_to_update[field_name]) == expected
     elif field_name == "json":
         assert (diagram.json == loads(data_to_update[field_name])) == expected
     else:
