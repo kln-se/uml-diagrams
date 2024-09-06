@@ -3,6 +3,8 @@ from factory.django import DjangoModelFactory
 from faker import Faker
 
 from apps.diagrams.models import Diagram
+from apps.sharings.constants import PermissionLevels
+from apps.sharings.models import Collaborator
 from apps.users.constants import PASSWORD_MIN_LENGTH, UserRoles
 from apps.users.models import User
 
@@ -51,3 +53,12 @@ class DiagramFactory(DjangoModelFactory):
     owner = factory.SubFactory(UserFactory)
     created_at = factory.Faker("date_time")
     updated_at = factory.Faker("date_time")
+
+
+class CollaboratorFactory(DjangoModelFactory):
+    class Meta:
+        model = Collaborator
+
+    diagram = factory.SubFactory(DiagramFactory)
+    shared_to = factory.SubFactory(UserFactory)
+    permission_level = factory.Iterator(PermissionLevels.CHOICES, getter=lambda x: x[0])

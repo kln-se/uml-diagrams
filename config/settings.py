@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # Created apps
     "apps.users",
     "apps.diagrams",
+    "apps.sharings",
 ]
 
 MIDDLEWARE = [
@@ -161,13 +162,17 @@ SPECTACULAR_SETTINGS = {
     The API supports:
         1. Store, retrieve, update and delete created UML diagrams;
         2. Retrieve all stored UML diagrams;
-        3. Create copy of a stored UML diagram.
+        3. Create copy of a stored UML diagram;
+        4. Share UML diagrams with other users (in progress).
 
     Basic permission rules:
-        1. Users can create, retrieve, update, delete and copy their own UML diagrams;
-        2. Admins can create, retrieve, update, delete and copy any UML diagram.
+        1. Users can do the following operations with their own UML diagrams:
+            - create, retrieve, update, delete (CRUD);
+            - copy diagrams;
+            - share diagrams to other users.
+        2. Admins can do all operations listed above with any UML diagram.
     """,
-    "VERSION": "1.0.0",
+    "VERSION": "1.5.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

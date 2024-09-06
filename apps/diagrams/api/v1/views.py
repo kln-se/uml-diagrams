@@ -3,6 +3,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import filters, generics, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
 from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
@@ -14,6 +15,8 @@ from apps.diagrams.api.v1.serializers import (
 )
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
+from apps.sharings.api.v1.actions import invite_collaborator
+from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from docs.api.templates.parameters import required_header_auth_parameter
 
 
@@ -86,6 +89,31 @@ from docs.api.templates.parameters import required_header_auth_parameter
             404: OpenApiResponse(description="Diagram not found"),
         },
     ),
+    invite_collaborator=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Invite a collaborator to a diagram",
+        description="A diagram owner can share his diagram to another user using "
+        "its email and provide one of the following permission levels:\n"
+        "- *view-only*: user can only view shared diagram;\n"
+        "- *view-copy*: user can view and copy shared diagram "
+        "to his/her own account;\n"
+        "- *view-edit*: user can view, copy, and edit shared diagram.\n\n"
+        "**Admin can share any diagram**.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: InviteCollaboratorSerializer,
+            400: OpenApiResponse(
+                description="Possible errors:\n"
+                "- JSON parse error;\n"
+                "- invalid email provided;\n"
+                "- invalid permission level provided;\n"
+                "- self-sharing is not allowed;\n"
+                "- sharing the same diagram to the same user is not allowed."
+            ),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
+    ),
 )
 # endregion
 class DiagramViewSet(viewsets.ModelViewSet):
@@ -137,21 +165,34 @@ class DiagramViewSet(viewsets.ModelViewSet):
         serializer.save(owner_id=owner.id)
 
     def get_serializer_class(self):
-        if self.request.method == "GET" and self.action == "list":
-            return DiagramListSerializer
-        return super().get_serializer_class()
+        serializer_mapping = {
+            "list": DiagramListSerializer,
+            "invite_collaborator": InviteCollaboratorSerializer,
+        }
+        return serializer_mapping.get(self.action, super().get_serializer_class())
+
+    @action(detail=True, methods=["post"], url_path="share-invite-user")
+    def invite_collaborator(self, *args, **kwargs):
+        """
+        Allows owner to share his diagram to another user using its email.
+        Admin can share any diagram.
+        """
+        return invite_collaborator(self, *args, **kwargs)
 
 
 # region @extend_schema
 @extend_schema(
     tags=[DiagramsConfig.tag],
     summary="Create a copy of an existing diagram",
-    description="This API endpoint allows you to create a copy of an existing diagram. "
-    "Copied diagram will have the same content as the original one, \
-    but a different title. New diagram description can be provided. \
-    The owner of the copied diagram will be the authenticated user. \
-    Parameter **id** should be provided **with minus sign** \
-    in the following UUID format: **123e4567-e89b-12d3-a456-426614174000**.",
+    description="Allows user to create a copy of their own diagram.\n\n"
+    "Features:\n"
+    "- copied diagram will have the same content as the original one, "
+    "but a different title: `Copy of {original_diagram_title}`;\n"
+    "- new diagram description can be provided optionally;\n"
+    "- the owner of the copied diagram will be the authenticated user.\n\n"
+    "**Admin user can copy any diagram.**\n\n"
+    "Parameter **id** should be provided **with minus sign** "
+    "in the following UUID format: `123e4567-e89b-12d3-a456-426614174000`.",
     parameters=[required_header_auth_parameter],
     responses={
         201: DiagramCopySerializer,

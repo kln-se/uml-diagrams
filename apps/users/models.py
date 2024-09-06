@@ -36,4 +36,4 @@ class User(AbstractUser):
         return self.role == UserRoles.ADMIN or self.is_superuser
 
     def __str__(self):
-        return f"{self.role}: {self.email}"
+        return f"{self.role}: «{self.email}»"

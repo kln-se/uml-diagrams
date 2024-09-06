@@ -3,6 +3,10 @@ PASSWORD_SPECIAL_CHARS = '!@#$%^&*()_+,.?":{}|<>'
 
 
 class UserRoles:
+    """
+    User roles and role names, displayed in the admin panel.
+    """
+
     USER = "user"
     MODERATOR = "moderator"
     ADMIN = "admin"
@@ -12,4 +16,3 @@ class UserRoles:
         (MODERATOR, "Moderator"),
         (ADMIN, "Admin"),
     )
-    """User roles and role names, displayed in the admin panel."""

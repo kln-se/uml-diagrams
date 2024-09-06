@@ -28,9 +28,9 @@ class Diagram(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated at")
 
-    def __str__(self):
-        return f'Diagram: "{self.title}"'
-
     class Meta:
         verbose_name = "Diagram"
         verbose_name_plural = "Diagrams"
+
+    def __str__(self):
+        return f"id: {self.id} | {self.owner}"

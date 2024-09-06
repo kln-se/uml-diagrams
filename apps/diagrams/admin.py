@@ -5,8 +5,8 @@ from apps.diagrams.models import Diagram
 
 class DiagramAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "title",
-        "description",
         "owner",
         "created_at",
         "updated_at",
