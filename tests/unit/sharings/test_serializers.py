@@ -22,6 +22,7 @@ class TestInviteCollaboratorSerializer:
         """
         serializer = InviteCollaboratorSerializer(instance=collaborator)
         assert serializer.data == {
+            "sharing_id": collaborator.id,
             "diagram_id": collaborator.diagram.id,
             "shared_to": collaborator.shared_to.email,
             "permission_level": collaborator.permission_level,

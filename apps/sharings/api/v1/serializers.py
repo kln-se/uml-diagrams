@@ -16,10 +16,12 @@ class InviteCollaboratorSerializer(serializers.ModelSerializer):
     permission_level = serializers.ChoiceField(choices=PermissionLevels.CHOICES)
     diagram_id = serializers.ReadOnlyField(source="diagram.id")
     shared_to = serializers.ReadOnlyField(source="shared_to.email")
+    sharing_id = serializers.ReadOnlyField(source="id")
 
     class Meta:
         model = Collaborator
         fields = [
+            "sharing_id",
             "user_email",
             "diagram_id",
             "shared_to",
