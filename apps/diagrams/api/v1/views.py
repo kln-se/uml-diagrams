@@ -15,7 +15,7 @@ from apps.diagrams.api.v1.serializers import (
 )
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
-from apps.sharings.api.v1.actions import invite_collaborator
+from apps.sharings.api.v1.actions import invite_collaborator, remove_all_collaborators
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from docs.api.templates.parameters import required_header_auth_parameter
 
@@ -114,6 +114,18 @@ from docs.api.templates.parameters import required_header_auth_parameter
             404: OpenApiResponse(description="Diagram not found"),
         },
     ),
+    remove_all_collaborators=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Remove all collaborators from a diagram",
+        description="Removes all users which diagram was shared to "
+        "from the collaborators list of a provided diagram.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            204: OpenApiResponse(description="Removed successfully"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
+    ),
 )
 # endregion
 class DiagramViewSet(viewsets.ModelViewSet):
@@ -168,6 +180,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
         serializer_mapping = {
             "list": DiagramListSerializer,
             "invite_collaborator": InviteCollaboratorSerializer,
+            "remove_all_collaborators": None,
         }
         return serializer_mapping.get(self.action, super().get_serializer_class())
 
@@ -178,6 +191,13 @@ class DiagramViewSet(viewsets.ModelViewSet):
         Admin can share any diagram.
         """
         return invite_collaborator(self, *args, **kwargs)
+
+    @action(detail=True, methods=["post"], url_path="share-unshare-all")
+    def remove_all_collaborators(self, *args, **kwargs):
+        """
+        Allows owner to remove all collaborators from his diagram.
+        """
+        return remove_all_collaborators(self, *args, **kwargs)
 
 
 # region @extend_schema

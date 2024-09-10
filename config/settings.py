@@ -170,9 +170,10 @@ SPECTACULAR_SETTINGS = {
             - create, retrieve, update, delete (CRUD);
             - copy diagrams;
             - share diagrams to other users.
+            - remove all collaborators from their diagram in a single request.
         2. Admins can do all operations listed above with any UML diagram.
     """,
-    "VERSION": "1.5.0-dev",
+    "VERSION": "1.6.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
