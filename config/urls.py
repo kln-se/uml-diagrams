@@ -22,6 +22,7 @@ api_v1_urlpatterns = [
     path("users/", include("apps.users.api.v1.urls")),
     path("diagrams/", include("apps.diagrams.api.v1.urls")),
     path("auth/", include("apps.authentication.api.v1.urls")),
+    path("sharings/", include("apps.sharings.api.v1.urls")),
 ]
 
 

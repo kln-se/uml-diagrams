@@ -66,6 +66,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Custom middleware
+    "apps.core.middleware.CustomExceptionMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -167,13 +169,14 @@ SPECTACULAR_SETTINGS = {
 
     Basic permission rules:
         1. Users can do the following operations with their own UML diagrams:
-            - create, retrieve, update, delete (CRUD);
+            - create, retrieve, update, delete (CRUD) their diagram;
             - copy diagrams;
             - share diagrams to other users.
-            - remove all collaborators from their diagram in a single request.
-        2. Admins can do all operations listed above with any UML diagram.
+            - remove all collaborators from their diagram in a single request;
+            - retrieve, update, delete their sharing invitations.
+        2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.6.0-dev",
+    "VERSION": "1.7.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

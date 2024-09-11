@@ -6,11 +6,11 @@ from rest_framework.views import APIView
 class IsAdminOrIsOwner(permissions.BasePermission):
     """
     Custom permission which allows:
-    - admins to do anything with any diagram;
-    - other users to view or edit just their own diagrams.
+    - admins to do anything with any sharing;
+    - other users to view or edit just their own sharings.
     """
 
     def has_object_permission(self, request: Request, view: APIView, obj) -> bool:
         if request.user.is_admin:
             return True
-        return obj.owner == request.user
+        return obj.diagram.owner == request.user
