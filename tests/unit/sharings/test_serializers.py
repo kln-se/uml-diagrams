@@ -1,6 +1,9 @@
 import pytest
 
-from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
+from apps.sharings.api.v1.serializers import (
+    CollaboratorSerializer,
+    InviteCollaboratorSerializer,
+)
 from apps.sharings.models import Collaborator
 from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
 
@@ -22,7 +25,7 @@ class TestInviteCollaboratorSerializer:
         """
         serializer = InviteCollaboratorSerializer(instance=collaborator)
         assert serializer.data == {
-            "sharing_id": collaborator.id,
+            "collaborator_id": collaborator.id,
             "diagram_id": collaborator.diagram.id,
             "shared_to": collaborator.shared_to.email,
             "permission_level": collaborator.permission_level,
@@ -128,3 +131,48 @@ class TestInviteCollaboratorSerializer:
         assert not serializer.is_valid()
         assert "non_field_errors" in serializer.errors
         assert serializer.errors["non_field_errors"][0].code == "non_unique_sharing"
+
+
+class TestCollaboratorSerializer:
+    def test_collaborator_serializer_returned_data(
+        self, collaborator: Collaborator
+    ) -> None:
+        """
+        GIVEN a random collaborator object
+        WHEN serializer is called
+        THEN check if serialized data is coincident with the collaborator's data.
+        """
+        serializer = CollaboratorSerializer(instance=collaborator)
+        assert serializer.data == {
+            "collaborator_id": collaborator.id,
+            "diagram_id": collaborator.diagram.id,
+            "shared_to": collaborator.shared_to.email,
+            "permission_level": collaborator.permission_level,
+            "shared_at": collaborator.shared_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        }
+
+    def test_collaborator_serializer_input_data_correct(self) -> None:
+        """
+        GIVEN a new correct permission level for collaborator to update
+        WHEN serializer is called
+        THEN check that serializer is valid.
+        """
+        data_to_update = {
+            "permission_level": CollaboratorFactory.build().permission_level,
+        }
+        serializer = CollaboratorSerializer(data=data_to_update)
+        assert serializer.is_valid()
+        assert "permission_level" not in serializer.errors
+
+    def test_collaborator_serializer_input_data_is_invalid(self) -> None:
+        """
+        GIVEN a new invalid permission level for collaborator to update
+        WHEN serializer is called
+        THEN check that serializer is not valid.
+        """
+        data_to_update = {
+            "permission_level": "invalid_permission_level",
+        }
+        serializer = CollaboratorSerializer(data=data_to_update)
+        assert not serializer.is_valid()
+        assert "permission_level" in serializer.errors

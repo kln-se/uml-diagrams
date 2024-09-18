@@ -12,6 +12,7 @@ from apps.diagrams.api.v1.serializers import (
     DiagramSerializer,
 )
 from apps.diagrams.api.v1.views import DiagramCopyAPIView, DiagramViewSet
+from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from apps.users.constants import UserRoles
 from tests.factories import DiagramFactory, UserFactory
 
@@ -196,7 +197,12 @@ class TestDiagramViewSet:
 
     @pytest.mark.parametrize(
         ("action", "serializer_class"),
-        [("list", DiagramListSerializer), ("retrieve", DiagramSerializer)],
+        [
+            ("list", DiagramListSerializer),
+            ("retrieve", DiagramSerializer),
+            ("invite_collaborator", InviteCollaboratorSerializer),
+            ("remove_all_collaborators", None),
+        ],
     )
     def test_get_serializer_class_correct(
         self, action: str, serializer_class: DiagramSerializer

@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
-from django.utils import timezone
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import filters, generics, viewsets
 from rest_framework.decorators import action
@@ -28,7 +27,7 @@ from docs.api.templates.parameters import required_header_auth_parameter
         description="Returns a list of all available diagrams.",
         parameters=[required_header_auth_parameter],
         responses={
-            200: DiagramSerializer(many=True),
+            200: DiagramListSerializer(many=True),
             401: OpenApiResponse(description="Invalid token or token not provided"),
         },
     ),
@@ -238,7 +237,5 @@ class DiagramCopyAPIView(generics.CreateAPIView):
         serializer.save(
             id=None,
             title=f"Copy of {original_diagram.title}",
-            created_at=timezone.now(),
-            updated_at=timezone.now(),
             owner=self.request.user,
         )

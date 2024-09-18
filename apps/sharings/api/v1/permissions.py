@@ -6,8 +6,8 @@ from rest_framework.views import APIView
 class IsAdminOrIsOwner(permissions.BasePermission):
     """
     Custom permission which allows:
-    - admins to do anything with any sharing;
-    - other users to view or edit just their own sharings.
+    - admins to do anything with any share invitation (collaborator obj.;
+    - other users to view or edit just their own share invitation.
     """
 
     def has_object_permission(self, request: Request, view: APIView, obj) -> bool:

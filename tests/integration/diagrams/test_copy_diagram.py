@@ -31,15 +31,12 @@ def test_copy_diagram_by_authenticated_owner(
         == data_to_set["description"]
         != diagram_owned_by_user.description
     )
-    assert response.data["json"] == diagram_owned_by_user.json
     assert response.data["created_at"] > diagram_owned_by_user.created_at.strftime(
         "%Y-%m-%dT%H:%M:%S.%fZ"
     )
-    assert response.data["updated_at"] > diagram_owned_by_user.updated_at.strftime(
-        "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
-    diagram = Diagram.objects.get(id=response.data["id"])
-    assert diagram.owner == logged_in_user
+    copied_diagram = Diagram.objects.get(id=response.data["id"])
+    assert copied_diagram.owner == logged_in_user
+    assert copied_diagram.json == diagram_owned_by_user.json
 
 
 def test_copy_diagram_user_tries_to_copy_another_user_diagram(
@@ -83,12 +80,9 @@ def test_copy_any_diagram_by_admin(client: APIClient, logged_in_admin: User) -> 
         == data_to_set["description"]
         != diagram_owned_by_another_user.description
     )
-    assert response.data["json"] == diagram_owned_by_another_user.json
     assert response.data[
         "created_at"
     ] > diagram_owned_by_another_user.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    assert response.data[
-        "updated_at"
-    ] > diagram_owned_by_another_user.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    diagram = Diagram.objects.get(id=response.data["id"])
-    assert diagram.owner == logged_in_admin
+    copied_diagram = Diagram.objects.get(id=response.data["id"])
+    assert copied_diagram.owner == logged_in_admin
+    assert copied_diagram.json == diagram_owned_by_another_user.json

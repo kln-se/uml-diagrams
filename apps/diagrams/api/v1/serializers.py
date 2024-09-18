@@ -37,6 +37,7 @@ from apps.users.models import User
 )
 # endregion
 class DiagramSerializer(serializers.ModelSerializer):
+    json = serializers.JSONField()
     owner_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=User.objects.all()
     )
@@ -60,19 +61,10 @@ class DiagramSerializer(serializers.ModelSerializer):
 @extend_schema_serializer(
     examples=[
         OpenApiExample(
-            name="Example for admin user",
-            summary="Request data example for admin user",
-            description="Field **owner_id** can be set just by an admin user.",
-            value={
-                "owner_id": f"{uuid.uuid4()}",
-                "description": "string",
-            },
-            request_only=True,
-        ),
-        OpenApiExample(
-            name="Example for non-admin user",
-            summary="Request data example for non-admin user",
-            description="Field **owner_id** can be set just by an admin user.",
+            name="JSON body example",
+            description="User can set **description** field in the request body.\n\n"
+            "The **title** field is read-only. It will be automatically "
+            "set to `Copy of {original_diagram_title}`.",
             value={
                 "description": "string",
             },
@@ -81,17 +73,31 @@ class DiagramSerializer(serializers.ModelSerializer):
     ]
 )
 # endregion
-class DiagramCopySerializer(DiagramSerializer):
-    class Meta(DiagramSerializer.Meta):
-        read_only_fields = ["title", "json"]
+class DiagramCopySerializer(serializers.ModelSerializer):
+    """
+    Used to copy diagrams via POST api/v1/diagrams/{uuid}/copy/
+    """
+
+    title = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Diagram
+        fields = [
+            "id",
+            "title",
+            "description",
+            "created_at",
+        ]
 
 
-class DiagramListSerializer(DiagramSerializer):
+class DiagramListSerializer(serializers.ModelSerializer):
     """
     Used to list diagrams via GET api/v1/diagrams/
     """
 
     owner_id = serializers.PrimaryKeyRelatedField(read_only=True)
+    owner_email = serializers.ReadOnlyField(source="owner.email")
 
-    class Meta(DiagramSerializer.Meta):
+    class Meta:
+        model = Diagram
         fields = ["id", "title", "owner_id", "owner_email", "created_at", "updated_at"]

@@ -4,7 +4,7 @@ from rest_framework import filters, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
-from apps.sharings.api.v1.pagination import SharingViewSetPagination
+from apps.sharings.api.v1.pagination import CollaboratorViewSetPagination
 from apps.sharings.api.v1.permissions import IsAdminOrIsOwner
 from apps.sharings.api.v1.serializers import CollaboratorSerializer
 from apps.sharings.apps import SharingsConfig
@@ -66,7 +66,7 @@ from docs.api.templates.parameters import required_header_auth_parameter
     ),
 )
 # endregion
-class SharingViewSet(
+class CollaboratorViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
@@ -83,7 +83,7 @@ class SharingViewSet(
     serializer_class = CollaboratorSerializer
     permission_classes = [IsAuthenticated, IsAdminOrIsOwner]
     http_method_names = ["get", "patch", "delete"]
-    pagination_class = SharingViewSetPagination
+    pagination_class = CollaboratorViewSetPagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["diagram_id", "shared_to", "permission_level", "shared_at"]
     ordering = ["-shared_at"]

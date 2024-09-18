@@ -37,7 +37,7 @@ def test_delete_diagram_try_to_delete_another_user_diagram(
     assert Diagram.objects.get(id=diagram_owned_by_another_user.id)
 
 
-def test_delete_diagram_admin_can_retrieve_any_diagram(
+def test_delete_diagram_admin_can_delete_any_diagram(
     client: APIClient, logged_in_admin: User
 ) -> None:
     """

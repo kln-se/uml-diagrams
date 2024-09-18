@@ -31,7 +31,8 @@ if env.bool("DJANGO_READ_ENV_FILE", default=True):
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # TODO: set to False in production
+# TODO: set to False in production
+DEBUG = env.bool("DJANGO_DEBUG_MODE")
 
 ALLOWED_HOSTS = []
 
@@ -176,7 +177,7 @@ SPECTACULAR_SETTINGS = {
             - retrieve, update, delete their sharing invitations.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.7.0-dev",
+    "VERSION": "1.8.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

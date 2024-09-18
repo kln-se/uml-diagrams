@@ -43,3 +43,33 @@ def test_diagram_copy_resolve() -> None:
     resolver_match = resolve(reverse("diagram-copy", args=[uuid_pk]))
     assert resolver_match.func.cls == DiagramCopyAPIView
     assert resolver_match.view_name == "diagram-copy"
+
+
+def test_diagram_invite_collaborator_resolve() -> None:
+    """
+    GIVEN a URL pattern name
+    WHEN the `resolve()` function is called with the URL associated with the pattern
+    THEN:
+        - the appropriate view is returned;
+        - resolver points to the view with the correct URL pattern name.
+    """
+    uuid_pk = uuid.uuid4()
+    resolver_match = resolve(reverse("diagram-invite-collaborator", args=[uuid_pk]))
+    assert resolver_match.func.cls == DiagramViewSet
+    assert resolver_match.view_name == "diagram-invite-collaborator"
+
+
+def test_diagram_remove_all_collaborators_resolve() -> None:
+    """
+    GIVEN a URL pattern name
+    WHEN the `resolve()` function is called with the URL associated with the pattern
+    THEN:
+        - the appropriate view is returned;
+        - resolver points to the view with the correct URL pattern name.
+    """
+    uuid_pk = uuid.uuid4()
+    resolver_match = resolve(
+        reverse("diagram-remove-all-collaborators", args=[uuid_pk])
+    )
+    assert resolver_match.func.cls == DiagramViewSet
+    assert resolver_match.view_name == "diagram-remove-all-collaborators"
