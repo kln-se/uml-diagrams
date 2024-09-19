@@ -6,7 +6,7 @@ from tests.factories import CollaboratorFactory, DiagramFactory
 from tests.integration.sharings.constants import COLLABORATOR_URL
 
 
-def test_retrieve_collaborator_by_authenticated_owner(
+def test_retrieve_collaborator_by_authenticated_inviter(
     client: APIClient, logged_in_user: User
 ) -> None:
     """
