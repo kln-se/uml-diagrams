@@ -174,10 +174,11 @@ SPECTACULAR_SETTINGS = {
             - copy diagrams;
             - share diagrams to other users.
             - remove all collaborators from their diagram in a single request;
-            - retrieve, update, delete their sharing invitations.
+            - retrieve, update, delete their sharing invitations;
+            - retrieve diagrams shared to them.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.8.1-dev",
+    "VERSION": "1.9.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

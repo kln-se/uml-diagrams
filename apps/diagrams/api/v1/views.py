@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
-from rest_framework import filters, generics, viewsets
+from rest_framework import filters, generics, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import GenericViewSet
 
 from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
 from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
@@ -15,7 +16,9 @@ from apps.diagrams.api.v1.serializers import (
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
 from apps.sharings.api.v1.actions import invite_collaborator, remove_all_collaborators
+from apps.sharings.api.v1.permissions import IsCollaborator
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
+from apps.sharings.models import Collaborator
 from docs.api.templates.parameters import required_header_auth_parameter
 
 
@@ -239,3 +242,66 @@ class DiagramCopyAPIView(generics.CreateAPIView):
             title=f"Copy of {original_diagram.title}",
             owner=self.request.user,
         )
+
+
+# region @extend_schema
+@extend_schema_view(
+    list=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="List diagrams shared to the current user",
+        description="Returns a list of all diagrams shared to the current user "
+        "by another users.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: DiagramListSerializer(many=True),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+        },
+    ),
+    retrieve=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Retrieve a diagram shared to the current user",
+        description="Returns the details of a specific diagram shared to the "
+        "current user by another user.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: DiagramSerializer,
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Shared diagram not found"),
+        },
+    ),
+)
+# endregion
+class SharedWithMeDiagramViewSet(
+    mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet
+):
+    """
+    API endpoint that allows:
+    - view list of all diagrams which were shared to the current user;
+    - view a diagram that was shared to the current user.
+    """
+
+    queryset: QuerySet[Diagram] = Diagram.objects.all()
+    serializer_class = DiagramSerializer
+    permission_classes = [IsAuthenticated, IsCollaborator]
+    http_method_names = ["get"]
+    pagination_class = DiagramViewSetPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["title", "owner_email", "created_at", "updated_at"]
+    ordering = ["-updated_at"]
+
+    def get_queryset(self) -> QuerySet[Diagram]:
+        """
+        Filter the queryset to return only the diagrams which were shared
+        to the current user.
+        """
+        shared_diagrams_id = Collaborator.objects.filter(
+            shared_to=self.request.user
+        ).values("diagram_id")
+        return Diagram.objects.filter(id__in=shared_diagrams_id)
+
+    def get_serializer_class(self):
+        serializer_mapping = {
+            "list": DiagramListSerializer,
+            "retrieve": DiagramSerializer,
+        }
+        return serializer_mapping.get(self.action, super().get_serializer_class())

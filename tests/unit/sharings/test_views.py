@@ -13,7 +13,7 @@ class TestCollaboratorViewSet:
 
     def test_get_queryset_returns_invited_collaborators_for_user(self) -> None:
         """
-        GIVEN share invitation made user and the one made by another user
+        GIVEN share invitation made by user and the one made by another user
         WHEN get_queryset is called by user
         THEN check that the queryset returns the collaborator object that \
         was created by the user.

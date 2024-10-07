@@ -35,6 +35,18 @@ class InviteCollaboratorSerializer(serializers.ModelSerializer):
         del attrs["diagram"]
         return attrs
 
+    @staticmethod
+    def validate_user_email(value):
+        """
+        Prevents sharing a diagram to an inactive user (is_active=0).
+        """
+        if not value.is_active:
+            raise serializers.ValidationError(
+                detail=f'User with the email "{value.email}" is not active.',
+                code="inactive_user",
+            )
+        return value
+
 
 class CollaboratorSerializer(serializers.ModelSerializer):
     collaborator_id = serializers.ReadOnlyField(source="id")

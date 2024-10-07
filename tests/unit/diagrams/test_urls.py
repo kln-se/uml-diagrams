@@ -2,7 +2,11 @@ import uuid
 
 from django.urls import resolve, reverse
 
-from apps.diagrams.api.v1.views import DiagramCopyAPIView, DiagramViewSet
+from apps.diagrams.api.v1.views import (
+    DiagramCopyAPIView,
+    DiagramViewSet,
+    SharedWithMeDiagramViewSet,
+)
 
 
 def test_diagram_list_resolve() -> None:
@@ -73,3 +77,16 @@ def test_diagram_remove_all_collaborators_resolve() -> None:
     )
     assert resolver_match.func.cls == DiagramViewSet
     assert resolver_match.view_name == "diagram-remove-all-collaborators"
+
+
+def test_shared_diagram_list_resolve() -> None:
+    """
+    GIVEN a URL pattern name
+    WHEN the `resolve()` function is called with the URL associated with the pattern
+    THEN:
+        - the appropriate view is returned;
+        - resolver points to the view with the correct URL pattern name.
+    """
+    resolver_match = resolve(reverse("shared-diagram-list"))
+    assert resolver_match.func.cls == SharedWithMeDiagramViewSet
+    assert resolver_match.view_name == "shared-diagram-list"

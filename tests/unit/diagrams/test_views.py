@@ -11,10 +11,15 @@ from apps.diagrams.api.v1.serializers import (
     DiagramListSerializer,
     DiagramSerializer,
 )
-from apps.diagrams.api.v1.views import DiagramCopyAPIView, DiagramViewSet
+from apps.diagrams.api.v1.views import (
+    DiagramCopyAPIView,
+    DiagramViewSet,
+    SharedWithMeDiagramViewSet,
+)
+from apps.sharings.api.v1.permissions import IsCollaborator
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from apps.users.constants import UserRoles
-from tests.factories import DiagramFactory, UserFactory
+from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
 
 
 class TestDiagramViewSet:
@@ -262,3 +267,66 @@ class TestDiagramCopyAPIView:
     def test_permission_class_correct(self) -> None:
         viewset = DiagramCopyAPIView()
         assert viewset.permission_classes == [IsAuthenticated, IsAdminOrIsOwner]
+
+
+class TestSharedWithMeDiagramViewSet:
+    def test_get_queryset_returns_only_shared_diagrams_for_collaborator(self) -> None:
+        """
+        GIVEN a user who was invited to some other users diagrams as collaborator
+        WHEN get_queryset is called by user
+        THEN check that the queryset returns only the diagrams he was shared to.
+        """
+        collaborator = UserFactory(role=UserRoles.USER)
+        # user was invited as collaborator to 2 different diagrams
+        sharing_invitations = [
+            CollaboratorFactory(shared_to=collaborator) for _ in range(2)
+        ]
+        # and was not invited to 1 diagram (3 invitations was made in total)
+        sharing_invitations += [CollaboratorFactory()]
+        request = APIRequestFactory()
+        request.user = collaborator
+        viewset = SharedWithMeDiagramViewSet(request=request)
+        assert viewset.get_queryset().count() == 2
+        assert viewset.get_queryset()[0] == sharing_invitations[0].diagram
+        assert viewset.get_queryset()[1] == sharing_invitations[1].diagram
+
+    def test_get_queryset_returns_nothing_for_non_collaborator(self) -> None:
+        """
+        GIVEN a user who has not invited to any diagram yet
+        WHEN get_queryset is called by user
+        THEN check that the queryset is empty.
+        """
+        collaborator = UserFactory(role=UserRoles.USER)
+        request = APIRequestFactory()
+        request.user = collaborator
+        viewset = SharedWithMeDiagramViewSet(request=request)
+        assert viewset.get_queryset().count() == 0
+
+    @pytest.mark.parametrize(
+        ("action", "serializer_class"),
+        [("list", DiagramListSerializer), ("retrieve", DiagramSerializer)],
+    )
+    def test_get_serializer_class_correct(self, action: str, serializer_class) -> None:
+        request = APIRequestFactory().get("/")
+        viewset = SharedWithMeDiagramViewSet(request=request)
+        viewset.action = action
+        assert viewset.get_serializer_class() == serializer_class
+
+    def test_permission_class_correct(self) -> None:
+        viewset = SharedWithMeDiagramViewSet()
+        assert viewset.permission_classes == [IsAuthenticated, IsCollaborator]
+
+    def test_viewset_ordering_options_correct(self) -> None:
+        viewset = SharedWithMeDiagramViewSet()
+        assert viewset.filter_backends == [filters.OrderingFilter]
+        assert viewset.ordering_fields == [
+            "title",
+            "owner_email",
+            "created_at",
+            "updated_at",
+        ]
+        assert viewset.ordering == ["-updated_at"]
+
+    def test_viewset_pagination_class_correct(self) -> None:
+        viewset = SharedWithMeDiagramViewSet()
+        assert viewset.pagination_class == DiagramViewSetPagination
