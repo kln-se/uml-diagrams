@@ -1,7 +1,10 @@
+from typing import List
+
 import pytest
 from django.http.response import Http404
 from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.serializers import ModelSerializer
 from rest_framework.test import APIRequestFactory
 
 from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
@@ -11,12 +14,11 @@ from apps.diagrams.api.v1.serializers import (
     DiagramListSerializer,
     DiagramSerializer,
 )
-from apps.diagrams.api.v1.views import (
-    DiagramCopyAPIView,
-    DiagramViewSet,
-    SharedWithMeDiagramViewSet,
+from apps.diagrams.api.v1.views import DiagramViewSet, SharedWithMeDiagramViewSet
+from apps.sharings.api.v1.permissions import (
+    IsCollaborator,
+    IsCollaboratorAndHasViewCopyPermission,
 )
-from apps.sharings.api.v1.permissions import IsCollaborator
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from apps.users.constants import UserRoles
 from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
@@ -205,6 +207,7 @@ class TestDiagramViewSet:
         [
             ("list", DiagramListSerializer),
             ("retrieve", DiagramSerializer),
+            ("copy_diagram", DiagramCopySerializer),
             ("invite_collaborator", InviteCollaboratorSerializer),
             ("remove_all_collaborators", None),
         ],
@@ -237,38 +240,6 @@ class TestDiagramViewSet:
         assert viewset.pagination_class == DiagramViewSetPagination
 
 
-class TestDiagramCopyAPIView:
-    def test_perform_create_correct(self) -> None:
-        """
-        GIVEN a diagram
-        WHEN perform_create() is called
-        THEN check that the copy of the diagram is created.
-        """
-        user = UserFactory(role=UserRoles.USER)
-        original_diagram = DiagramFactory(owner=user)
-        request = APIRequestFactory()
-        request.user = user
-        viewset = DiagramCopyAPIView(
-            request=request, kwargs={"pk": original_diagram.id}
-        )
-        serializer = DiagramCopySerializer(
-            original_diagram, data={"description": "Copied."}, partial=True
-        )
-        serializer.is_valid()
-        viewset.perform_create(serializer)
-        assert serializer.instance != original_diagram
-        assert serializer.instance.title == f"Copy of {original_diagram.title}"
-        assert serializer.instance.description != original_diagram.description
-        assert serializer.instance.owner == user
-        assert serializer.instance.id != original_diagram.id
-        assert serializer.instance.created_at != original_diagram.created_at
-        assert serializer.instance.updated_at != original_diagram.updated_at
-
-    def test_permission_class_correct(self) -> None:
-        viewset = DiagramCopyAPIView()
-        assert viewset.permission_classes == [IsAuthenticated, IsAdminOrIsOwner]
-
-
 class TestSharedWithMeDiagramViewSet:
     def test_get_queryset_returns_only_shared_diagrams_for_collaborator(self) -> None:
         """
@@ -286,9 +257,11 @@ class TestSharedWithMeDiagramViewSet:
         request = APIRequestFactory()
         request.user = collaborator
         viewset = SharedWithMeDiagramViewSet(request=request)
-        assert viewset.get_queryset().count() == 2
-        assert viewset.get_queryset()[0] == sharing_invitations[0].diagram
-        assert viewset.get_queryset()[1] == sharing_invitations[1].diagram
+        queryset = viewset.get_queryset()
+        assert queryset.count() == 2
+        assert sharing_invitations[0].diagram in queryset
+        assert sharing_invitations[1].diagram in queryset
+        assert sharing_invitations[2].diagram not in queryset
 
     def test_get_queryset_returns_nothing_for_non_collaborator(self) -> None:
         """
@@ -304,17 +277,43 @@ class TestSharedWithMeDiagramViewSet:
 
     @pytest.mark.parametrize(
         ("action", "serializer_class"),
-        [("list", DiagramListSerializer), ("retrieve", DiagramSerializer)],
+        [
+            ("list", DiagramListSerializer),
+            ("retrieve", DiagramSerializer),
+            ("copy_shared_diagram", DiagramCopySerializer),
+        ],
     )
-    def test_get_serializer_class_correct(self, action: str, serializer_class) -> None:
+    def test_get_serializer_class_correct(
+        self, action: str, serializer_class: ModelSerializer
+    ) -> None:
         request = APIRequestFactory().get("/")
         viewset = SharedWithMeDiagramViewSet(request=request)
         viewset.action = action
         assert viewset.get_serializer_class() == serializer_class
 
-    def test_permission_class_correct(self) -> None:
+    def test_basic_permission_class_correct(self) -> None:
         viewset = SharedWithMeDiagramViewSet()
         assert viewset.permission_classes == [IsAuthenticated, IsCollaborator]
+
+    @pytest.mark.parametrize(
+        ("action", "permission_classes"),
+        [
+            ("list", [IsAuthenticated, IsCollaborator]),
+            ("retrieve", [IsAuthenticated, IsCollaborator]),
+            (
+                "copy_shared_diagram",
+                [IsAuthenticated, IsCollaboratorAndHasViewCopyPermission],
+            ),
+        ],
+    )
+    def test_get_permissions(
+        self, action: str, permission_classes: List[ModelSerializer]
+    ) -> None:
+        request = APIRequestFactory().get("/")
+        viewset = SharedWithMeDiagramViewSet(request=request)
+        viewset.action = action
+        for perm_obj, perm_class in zip(viewset.get_permissions(), permission_classes):
+            assert isinstance(perm_obj, perm_class)
 
     def test_viewset_ordering_options_correct(self) -> None:
         viewset = SharedWithMeDiagramViewSet()
@@ -330,3 +329,7 @@ class TestSharedWithMeDiagramViewSet:
     def test_viewset_pagination_class_correct(self) -> None:
         viewset = SharedWithMeDiagramViewSet()
         assert viewset.pagination_class == DiagramViewSetPagination
+
+    def test_shared_with_me_diagram_viewset_http_methods_correct(self) -> None:
+        viewset = SharedWithMeDiagramViewSet()
+        assert viewset.http_method_names == ["get", "post"]

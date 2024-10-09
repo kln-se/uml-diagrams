@@ -11,6 +11,7 @@ from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
 
 
 class TestActionInviteCollaborator:
+    """Test @action invite_collaborator() inside DiagramViewSet."""
 
     def test_invite_collaborator_correct_invitation_data(self):
         """
@@ -68,6 +69,7 @@ class TestActionInviteCollaborator:
 
 
 class TestActionRemoveAllCollaborators:
+    """Test @action remove_all_collaborators() inside DiagramViewSet."""
 
     def test_remove_all_collaborators_all_collaborators_removed_successfully(self):
         """

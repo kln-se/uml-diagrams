@@ -1,11 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
-from rest_framework import filters, generics, mixins, viewsets
+from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
+from apps.diagrams.api.v1.actions import copy_diagram
 from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
 from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
 from apps.diagrams.api.v1.serializers import (
@@ -16,7 +17,10 @@ from apps.diagrams.api.v1.serializers import (
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
 from apps.sharings.api.v1.actions import invite_collaborator, remove_all_collaborators
-from apps.sharings.api.v1.permissions import IsCollaborator
+from apps.sharings.api.v1.permissions import (
+    IsCollaborator,
+    IsCollaboratorAndHasViewCopyPermission,
+)
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from apps.sharings.models import Collaborator
 from docs.api.templates.parameters import required_header_auth_parameter
@@ -91,6 +95,24 @@ from docs.api.templates.parameters import required_header_auth_parameter
             404: OpenApiResponse(description="Diagram not found"),
         },
     ),
+    copy_diagram=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Create a copy of an existing diagram",
+        description="Allows user to create a copy of their own diagram.\n\n"
+        "Features:\n"
+        "- copied diagram will have the same content as the original one, "
+        "but a different title: `Copy of {original_diagram_title}`;\n"
+        "- new diagram description can be provided optionally;\n"
+        "- the owner of the copied diagram will be the authenticated user.\n\n"
+        "**Admin user can copy any diagram.**",
+        parameters=[required_header_auth_parameter],
+        responses={
+            201: DiagramCopySerializer,
+            400: OpenApiResponse(description="JSON parse error"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
+    ),
     invite_collaborator=extend_schema(
         tags=[DiagramsConfig.tag],
         summary="Invite a collaborator to a diagram",
@@ -103,7 +125,7 @@ from docs.api.templates.parameters import required_header_auth_parameter
         "**Admin can share any diagram**.",
         parameters=[required_header_auth_parameter],
         responses={
-            200: InviteCollaboratorSerializer,
+            201: InviteCollaboratorSerializer,
             400: OpenApiResponse(
                 description="Possible errors:\n"
                 "- JSON parse error;\n"
@@ -125,7 +147,7 @@ from docs.api.templates.parameters import required_header_auth_parameter
         responses={
             204: OpenApiResponse(description="Removed successfully"),
             401: OpenApiResponse(description="Invalid token or token not provided"),
-            404: OpenApiResponse(description="Diagram not found"),
+            404: OpenApiResponse(description="Diagram not found."),
         },
     ),
 )
@@ -181,10 +203,18 @@ class DiagramViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer_mapping = {
             "list": DiagramListSerializer,
+            "copy_diagram": DiagramCopySerializer,
             "invite_collaborator": InviteCollaboratorSerializer,
             "remove_all_collaborators": None,
         }
         return serializer_mapping.get(self.action, super().get_serializer_class())
+
+    @action(detail=True, methods=["post"], url_path="copy")
+    def copy_diagram(self, *args, **kwargs):
+        """
+        Allows diagram owner or admin to create a copy of an existing diagram.
+        """
+        return copy_diagram(self, *args, **kwargs)
 
     @action(detail=True, methods=["post"], url_path="share-invite-user")
     def invite_collaborator(self, *args, **kwargs):
@@ -200,48 +230,6 @@ class DiagramViewSet(viewsets.ModelViewSet):
         Allows owner to remove all collaborators from his diagram.
         """
         return remove_all_collaborators(self, *args, **kwargs)
-
-
-# region @extend_schema
-@extend_schema(
-    tags=[DiagramsConfig.tag],
-    summary="Create a copy of an existing diagram",
-    description="Allows user to create a copy of their own diagram.\n\n"
-    "Features:\n"
-    "- copied diagram will have the same content as the original one, "
-    "but a different title: `Copy of {original_diagram_title}`;\n"
-    "- new diagram description can be provided optionally;\n"
-    "- the owner of the copied diagram will be the authenticated user.\n\n"
-    "**Admin user can copy any diagram.**\n\n"
-    "Parameter **id** should be provided **with minus sign** "
-    "in the following UUID format: `123e4567-e89b-12d3-a456-426614174000`.",
-    parameters=[required_header_auth_parameter],
-    responses={
-        201: DiagramCopySerializer,
-        400: OpenApiResponse(description="JSON parse error"),
-        401: OpenApiResponse(description="Invalid token or token not provided"),
-        403: OpenApiResponse(description="Forbidden to copy this diagram"),
-        404: OpenApiResponse(description="Diagram not found"),
-    },
-)
-# endregion
-class DiagramCopyAPIView(generics.CreateAPIView):
-    """
-    API endpoint that allows to create a copy of an existing diagram.
-    """
-
-    queryset: QuerySet[Diagram] = Diagram.objects.all()
-    serializer_class = DiagramCopySerializer
-    permission_classes = [IsAuthenticated, IsAdminOrIsOwner]
-
-    def perform_create(self, serializer: DiagramCopySerializer) -> None:
-        original_diagram = self.get_object()
-        serializer.instance = original_diagram
-        serializer.save(
-            id=None,
-            title=f"Copy of {original_diagram.title}",
-            owner=self.request.user,
-        )
 
 
 # region @extend_schema
@@ -269,6 +257,21 @@ class DiagramCopyAPIView(generics.CreateAPIView):
             404: OpenApiResponse(description="Shared diagram not found"),
         },
     ),
+    copy_shared_diagram=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Copy a diagram shared to the current user",
+        description="Allows to copy a specific diagram shared to the current user, "
+        "if its owner shared it to him with **view-copy** "
+        "(View & Copy) permission.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            201: DiagramCopySerializer,
+            400: OpenApiResponse(description="JSON parse error"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            403: OpenApiResponse(description="Insufficient permission to copy"),
+            404: OpenApiResponse(description="Shared diagram not found"),
+        },
+    ),
 )
 # endregion
 class SharedWithMeDiagramViewSet(
@@ -283,7 +286,7 @@ class SharedWithMeDiagramViewSet(
     queryset: QuerySet[Diagram] = Diagram.objects.all()
     serializer_class = DiagramSerializer
     permission_classes = [IsAuthenticated, IsCollaborator]
-    http_method_names = ["get"]
+    http_method_names = ["get", "post"]
     pagination_class = DiagramViewSetPagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["title", "owner_email", "created_at", "updated_at"]
@@ -303,5 +306,29 @@ class SharedWithMeDiagramViewSet(
         serializer_mapping = {
             "list": DiagramListSerializer,
             "retrieve": DiagramSerializer,
+            "copy_shared_diagram": DiagramCopySerializer,
         }
         return serializer_mapping.get(self.action, super().get_serializer_class())
+
+    def get_permissions(self):
+        permission_mapping = {
+            "copy_shared_diagram": [
+                IsAuthenticated,
+                IsCollaboratorAndHasViewCopyPermission,
+            ],
+        }
+        return [
+            permission()
+            for permission in permission_mapping.get(
+                self.action, self.permission_classes
+            )
+        ]
+
+    @action(detail=True, methods=["post"], url_path="copy")
+    def copy_shared_diagram(self, *args, **kwargs):
+        """
+        Allows invited collaborator to copy the diagram he was shared to
+        if he has appropriate permission.
+        Requires `IsCollaboratorAndHasViewCopyPermission` permission.
+        """
+        return copy_diagram(self, *args, **kwargs)

@@ -12,5 +12,4 @@ router.register(r"", views.DiagramViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("<uuid:pk>/copy/", views.DiagramCopyAPIView.as_view(), name="diagram-copy"),
 ]

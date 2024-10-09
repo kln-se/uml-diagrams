@@ -3,10 +3,8 @@
 The application programming interface (API) of a web-based application which is designed to handle the processing of UML diagrams in the form of JSON.
 
 The API supports:
-1. Store, retrieve, update and delete created UML diagrams;
-2. Retrieve all stored UML diagrams;
-3. Create copy of a stored UML diagram;
-4. Share UML diagrams with other users.
+1. Store, retrieve, update, delete and copy created UML diagrams;
+2. Share UML diagrams to other users with different permissions.
 
 # 2. How to run
 
@@ -39,6 +37,7 @@ python manage.py migrate
 ```env
 # Django
 SECRET_KEY=<some-secret-key>
+DJANGO_DEBUG_MODE=True
 ```
 8. **(Optional)** Сonfigure the CORS (Cross-Origin Resource Sharing) settings in your `settings.py` file by adding the domain(s) of your front-end application to the `CORS_ALLOWED_ORIGINS` list.
 For example:

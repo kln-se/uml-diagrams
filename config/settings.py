@@ -171,14 +171,16 @@ SPECTACULAR_SETTINGS = {
     Basic permission rules:
         1. Users can do the following operations with their own UML diagrams:
             - create, retrieve, update, delete (CRUD) their diagram;
-            - copy diagrams;
+            - copy own diagrams;
             - share diagrams to other users.
+            - retrieve shared diagrams;
+            - copy shared diagrams if permission is granted;
             - remove all collaborators from their diagram in a single request;
-            - retrieve, update, delete their sharing invitations;
+            - retrieve, update, delete created sharing invitations;
             - retrieve diagrams shared to them.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.9.0-dev",
+    "VERSION": "1.10.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

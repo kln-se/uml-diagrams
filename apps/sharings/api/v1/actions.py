@@ -1,7 +1,6 @@
 from typing import Union
 
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -10,7 +9,7 @@ from apps.sharings.models import Collaborator
 
 
 def invite_collaborator(
-    self: Union[ModelViewSet, CreateAPIView], request: Request, **_kwargs
+    self: Union[ModelViewSet], request: Request, **_kwargs
 ) -> Response:
     """
     API endpoint that allows to share an existing diagram with other users:
@@ -26,9 +25,7 @@ def invite_collaborator(
     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-def remove_all_collaborators(
-    self: Union[ModelViewSet, CreateAPIView], *_args, **_kwargs
-) -> Response:
+def remove_all_collaborators(self: Union[ModelViewSet], *_args, **_kwargs) -> Response:
     """
     API endpoint that allows to remove all existing collaborators from a
     certain diagram.

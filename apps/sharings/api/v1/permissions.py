@@ -25,9 +25,25 @@ class IsCollaborator(permissions.BasePermission):
     """
     Custom permission which allows user to access the diagram
     if he is the one who the diagram was shared to (i.e. collaborator).
+    Permission "view-only" is required in database.
     """
 
     def has_object_permission(
         self, request: Request, view: APIView, obj: Diagram
     ) -> bool:
         return Collaborator.objects.filter(diagram=obj, shared_to=request.user).exists()
+
+
+class IsCollaboratorAndHasViewCopyPermission(permissions.BasePermission):
+    """
+    Custom permission which allows collaborator to copy shared diagram
+    if he has the appropriate permission.
+    Permission "view-copy" is required in database.
+    """
+
+    def has_object_permission(
+        self, request: Request, view: APIView, obj: Diagram
+    ) -> bool:
+        return Collaborator.objects.filter(
+            diagram=obj, shared_to=request.user, permission_level="view-copy"
+        ).exists()
