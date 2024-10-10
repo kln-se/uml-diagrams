@@ -95,9 +95,31 @@ class DiagramListSerializer(serializers.ModelSerializer):
     Used to list diagrams via GET api/v1/diagrams/
     """
 
+    diagram_id = serializers.ReadOnlyField(source="id")
     owner_id = serializers.PrimaryKeyRelatedField(read_only=True)
     owner_email = serializers.ReadOnlyField(source="owner.email")
 
     class Meta:
         model = Diagram
-        fields = ["id", "title", "owner_id", "owner_email", "created_at", "updated_at"]
+        fields = [
+            "diagram_id",
+            "title",
+            "owner_id",
+            "owner_email",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class SharedDiagramListSerializer(DiagramListSerializer):
+    """
+    Used to list diagrams via GET api/v1/diagrams/shared-with-me/.
+    Diagram object is annotated with its permission level in get_queryset()
+    method of SharedWithMeDiagramViewSet.
+    """
+
+    permission_level = serializers.ReadOnlyField()
+
+    class Meta:
+        model = Diagram
+        fields = DiagramListSerializer.Meta.fields + ["permission_level"]

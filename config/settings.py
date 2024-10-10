@@ -34,6 +34,7 @@ SECRET_KEY = env("SECRET_KEY")
 # TODO: set to False in production
 DEBUG = env.bool("DJANGO_DEBUG_MODE")
 
+# TODO: add host in production
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -180,10 +181,10 @@ SPECTACULAR_SETTINGS = {
             - retrieve diagrams shared to them.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.10.0-dev",
+    "VERSION": "1.11.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
-
+# TODO: set correct port
 # django-cors-headers
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",

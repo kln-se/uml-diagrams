@@ -30,7 +30,7 @@ def test_retrieve_shared_diagrams_only_shared_diagrams_for_authenticated_collabo
     assert len(results) == len(sharing_invitations)
     for idx, sharing_invitation in enumerate(sharing_invitations):
         diagram_data_as_dict = {
-            "id": str(sharing_invitation.diagram.id),
+            "diagram_id": str(sharing_invitation.diagram.id),
             "title": sharing_invitation.diagram.title,
             "owner_id": str(sharing_invitation.diagram.owner.id),
             "owner_email": sharing_invitation.diagram.owner.email,
@@ -40,6 +40,7 @@ def test_retrieve_shared_diagrams_only_shared_diagrams_for_authenticated_collabo
             "updated_at": sharing_invitation.diagram.updated_at.strftime(
                 "%Y-%m-%dT%H:%M:%S.%fZ"
             ),
+            "permission_level": sharing_invitation.permission_level,
         }
         assert results[idx] == diagram_data_as_dict
 

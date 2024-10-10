@@ -24,7 +24,7 @@ def test_retrieve_diagrams_visible_to_authenticated_owner(
     assert len(results) == len(diagrams_owned_by_user)
     for idx, diagram_owned_by_user in enumerate(diagrams_owned_by_user):
         diagram_data_as_dict = {
-            "id": str(diagram_owned_by_user.id),
+            "diagram_id": str(diagram_owned_by_user.id),
             "title": diagram_owned_by_user.title,
             "owner_id": str(diagram_owned_by_user.owner.id),
             "owner_email": diagram_owned_by_user.owner.email,
@@ -57,7 +57,7 @@ def test_retrieve_all_diagrams_by_admin(
     assert len(results) == len(all_diagrams)
     for idx, diagram in enumerate(all_diagrams):
         diagram_data_as_dict = {
-            "id": str(diagram.id),
+            "diagram_id": str(diagram.id),
             "title": diagram.title,
             "owner_id": str(diagram.owner.id),
             "owner_email": diagram.owner.email,

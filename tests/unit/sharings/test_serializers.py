@@ -146,6 +146,7 @@ class TestCollaboratorSerializer:
         assert serializer.data == {
             "collaborator_id": collaborator.id,
             "diagram_id": collaborator.diagram.id,
+            "diagram_title": collaborator.diagram.title,
             "shared_to": collaborator.shared_to.email,
             "permission_level": collaborator.permission_level,
             "shared_at": collaborator.shared_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),

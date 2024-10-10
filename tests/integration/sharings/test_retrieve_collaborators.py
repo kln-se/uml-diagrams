@@ -30,6 +30,7 @@ def test_retrieve_collaborators_visible_to_authenticated_(
         collaborator_data_as_dict = {
             "collaborator_id": str(collaborator.id),
             "diagram_id": str(collaborator.diagram.id),
+            "diagram_title": collaborator.diagram.title,
             "shared_to": collaborator.shared_to.email,
             "permission_level": collaborator.permission_level,
             "shared_at": collaborator.shared_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -61,6 +62,7 @@ def test_retrieve_all_collaborators_by_admin(
         collaborator_data_as_dict = {
             "collaborator_id": str(collaborator.id),
             "diagram_id": str(collaborator.diagram.id),
+            "diagram_title": collaborator.diagram.title,
             "shared_to": collaborator.shared_to.email,
             "permission_level": collaborator.permission_level,
             "shared_at": collaborator.shared_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),

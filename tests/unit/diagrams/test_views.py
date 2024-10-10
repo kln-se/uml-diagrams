@@ -13,6 +13,7 @@ from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
     DiagramListSerializer,
     DiagramSerializer,
+    SharedDiagramListSerializer,
 )
 from apps.diagrams.api.v1.views import DiagramViewSet, SharedWithMeDiagramViewSet
 from apps.sharings.api.v1.permissions import (
@@ -278,7 +279,7 @@ class TestSharedWithMeDiagramViewSet:
     @pytest.mark.parametrize(
         ("action", "serializer_class"),
         [
-            ("list", DiagramListSerializer),
+            ("list", SharedDiagramListSerializer),
             ("retrieve", DiagramSerializer),
             ("copy_shared_diagram", DiagramCopySerializer),
         ],

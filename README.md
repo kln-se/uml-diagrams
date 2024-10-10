@@ -39,9 +39,13 @@ python manage.py migrate
 SECRET_KEY=<some-secret-key>
 DJANGO_DEBUG_MODE=True
 ```
-8. **(Optional)** Сonfigure the CORS (Cross-Origin Resource Sharing) settings in your `settings.py` file by adding the domain(s) of your front-end application to the `CORS_ALLOWED_ORIGINS` list.
+8. **(Optional)** Сonfigure the CORS (Cross-Origin Resource Sharing) settings in your `settings.py` file by adding the domain(s) of your front-end application to the `CORS_ALLOWED_ORIGINS` and `ALLOWED_HOSTS` lists.
 For example:
 ```python
+ALLOWED_HOSTS = [
+    "localhost",
+]
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]

@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import QuerySet
+from django.db.models import OuterRef, QuerySet, Subquery
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import action
@@ -13,6 +13,7 @@ from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
     DiagramListSerializer,
     DiagramSerializer,
+    SharedDiagramListSerializer,
 )
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
@@ -295,16 +296,23 @@ class SharedWithMeDiagramViewSet(
     def get_queryset(self) -> QuerySet[Diagram]:
         """
         Filter the queryset to return only the diagrams which were shared
-        to the current user.
+        to the current user. Each shared diagram object is annotated with value
+        of the permission level it was shared with.
         """
         shared_diagrams_id = Collaborator.objects.filter(
             shared_to=self.request.user
         ).values("diagram_id")
-        return Diagram.objects.filter(id__in=shared_diagrams_id)
+        return Diagram.objects.filter(id__in=shared_diagrams_id).annotate(
+            permission_level=Subquery(
+                Collaborator.objects.filter(
+                    shared_to_id=self.request.user.id, diagram_id=OuterRef("id")
+                ).values("permission_level")
+            )
+        )
 
     def get_serializer_class(self):
         serializer_mapping = {
-            "list": DiagramListSerializer,
+            "list": SharedDiagramListSerializer,
             "retrieve": DiagramSerializer,
             "copy_shared_diagram": DiagramCopySerializer,
         }

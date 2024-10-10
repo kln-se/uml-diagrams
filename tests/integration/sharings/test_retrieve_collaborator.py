@@ -21,6 +21,7 @@ def test_retrieve_collaborator_by_authenticated_inviter(
     diagram_data_as_dict = {
         "collaborator_id": str(invited_collaborator.id),
         "diagram_id": str(diagram_owned_by_user.id),
+        "diagram_title": diagram_owned_by_user.title,
         "shared_to": invited_collaborator.shared_to.email,
         "permission_level": invited_collaborator.permission_level,
         "shared_at": invited_collaborator.shared_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -60,6 +61,7 @@ def test_retrieve_collaborator_admin_can_retrieve_any_collaborator_data(
     diagram_data_as_dict = {
         "collaborator_id": str(collaborator_invited_by_another_user.id),
         "diagram_id": str(collaborator_invited_by_another_user.diagram.id),
+        "diagram_title": collaborator_invited_by_another_user.diagram.title,
         "shared_to": collaborator_invited_by_another_user.shared_to.email,
         "permission_level": collaborator_invited_by_another_user.permission_level,
         "shared_at": collaborator_invited_by_another_user.shared_at.strftime(

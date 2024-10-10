@@ -4,8 +4,10 @@ from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
     DiagramListSerializer,
     DiagramSerializer,
+    SharedDiagramListSerializer,
 )
 from apps.diagrams.models import Diagram
+from apps.sharings.constants import PermissionLevels
 from tests.factories import DiagramFactory
 
 
@@ -76,10 +78,33 @@ class TestDiagramListSerializer:
         """
         serializer = DiagramListSerializer(diagram)
         assert serializer.data == {
-            "id": str(diagram.id),
+            "diagram_id": diagram.id,
             "title": diagram.title,
             "owner_id": diagram.owner.id,
             "owner_email": diagram.owner.email,
             "created_at": diagram.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "updated_at": diagram.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        }
+
+
+class TestSharedDiagramListSerializer:
+    def test_shared_diagram_list_serializer_correct_returned_data(
+        self, diagram: Diagram
+    ) -> None:
+        """
+        GIVEN a random diagram object that has been shared to another user
+        with "view-only" permission level
+        WHEN serializer is called
+        THEN check if serialized data is coincident with the diagram's data.
+        """
+        diagram.permission_level = PermissionLevels.VIEWONLY
+        serializer = SharedDiagramListSerializer(diagram)
+        assert serializer.data == {
+            "diagram_id": diagram.id,
+            "title": diagram.title,
+            "owner_id": diagram.owner.id,
+            "owner_email": diagram.owner.email,
+            "created_at": diagram.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": diagram.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "permission_level": PermissionLevels.VIEWONLY,
         }
