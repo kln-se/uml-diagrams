@@ -1,26 +1,38 @@
+import environ
 from django.db import migrations
 from rest_framework.authtoken.models import Token
+from pathlib import Path
 
 from apps.users.models import User
 
-SUPERUSER_EMAIL = 'admin@example.org'
-SUPERUSER_PASSWORD = 'admin'
-
 
 class CreateSuperuser:
+    BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
     superuser: User
 
     @classmethod
-    def create_superuser(cls, apps, schema_editor):
-        cls.superuser = User.objects.create_superuser(
-            email=SUPERUSER_EMAIL,
-            password=SUPERUSER_PASSWORD,
-        )
-        cls.superuser.save()
+    def get_env(cls):
+        env = environ.Env()
+        if env.bool("DJANGO_READ_ENV_FILE", default=True):
+            env.read_env(str(cls.BASE_DIR / ".env"))
+        return env
 
     @classmethod
-    def generate_token(cls, apps, schema_editor):
+    def generate_token(cls, *_args):
         Token.objects.create(user=cls.superuser)
+
+    @classmethod
+    def create_superuser(cls, *_args):
+        env = cls.get_env()
+        superuser = User.objects.filter(
+            email=env.str("SUPERUSER_EMAIL"))
+        if not superuser.exists():
+            cls.superuser = User.objects.create_superuser(
+                email=env.str("SUPERUSER_EMAIL"),
+                password=env.str("SUPERUSER_PASSWORD"),
+            )
+            cls.superuser.save()
+            cls.generate_token()
 
 
 class Migration(migrations.Migration):
@@ -30,5 +42,4 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(CreateSuperuser.create_superuser),
-        migrations.RunPython(CreateSuperuser.generate_token),
     ]

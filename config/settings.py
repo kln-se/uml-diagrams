@@ -95,11 +95,18 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASES = {
-    # TODO: Switch to PostgreSQL later
     "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env.str("POSTGRES_DB", default=""),
+        "USER": env.str("POSTGRES_USER", default=""),
+        "PASSWORD": env.str("POSTGRES_PASSWORD", default=""),
+        "HOST": env.str("DB_HOST", default="127.0.0.1"),
+        "PORT": env.str("DB_PORT", default="5432"),
+    },
+    "sqlite3": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-    }
+    },
 }
 
 # Password validation
@@ -181,7 +188,7 @@ SPECTACULAR_SETTINGS = {
             - retrieve diagrams shared to them.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.11.0-dev",
+    "VERSION": "1.12.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 # TODO: set correct port
