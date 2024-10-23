@@ -1,0 +1,63 @@
+name: uml-diagrams
+
+volumes:
+    pg_db_data:
+    static:
+
+networks:
+    uml_diagrams_net:
+
+services:
+    postgres:
+        container_name: uml-diagrams-postgres
+        build: ./deploy/db/
+        env_file: .env
+        volumes:
+            - pg_db_data:/var/lib/postgresql/data
+        networks:
+            - uml_diagrams_net
+        restart: unless-stopped
+        ports:
+            - "5432:5432"
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+            start_period: 10s
+            interval: 5s
+            timeout: 5s
+            retries: 3
+
+    api:
+        container_name: uml-diagrams-api
+        build: ./
+        env_file: .env
+        environment:
+            - DB_HOST=uml-diagrams-postgres
+            - DJANGO_DEBUG_MODE=True
+        volumes:
+            - static:/app/staticfiles
+        networks:
+            - uml_diagrams_net
+        restart: unless-stopped
+        healthcheck:
+            test: [ "CMD-SHELL", "curl -f -I http://localhost:8000/health-check/" ]
+            start_period: 5s
+            interval: 5s
+            timeout: 5s
+            retries: 3
+        depends_on:
+            postgres:
+                condition: service_healthy
+
+    nginx:
+        container_name: uml-diagrams-nginx
+        build: ./deploy/nginx/
+        volumes:
+            - static:/staticfiles
+        networks:
+            - uml_diagrams_net
+        ports:
+            - "8081:80"
+        restart: unless-stopped
+        depends_on:
+            api:
+                condition: service_healthy

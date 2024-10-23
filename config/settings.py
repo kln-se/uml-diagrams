@@ -19,7 +19,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables
 env = environ.Env()
-# TODO: set default=False in production
 if env.bool("DJANGO_READ_ENV_FILE", default=True):
     env.read_env(str(BASE_DIR / ".env"))
 
@@ -28,14 +27,10 @@ if env.bool("DJANGO_READ_ENV_FILE", default=True):
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env.str("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# TODO: set to False in production
 DEBUG = env.bool("DJANGO_DEBUG_MODE")
-
-# TODO: add host in production
-ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -52,6 +47,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "corsheaders",
     # Created apps
+    "apps.core",
     "apps.users",
     "apps.diagrams",
     "apps.sharings",
@@ -97,13 +93,13 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env.str("POSTGRES_DB", default=""),
-        "USER": env.str("POSTGRES_USER", default=""),
-        "PASSWORD": env.str("POSTGRES_PASSWORD", default=""),
+        "NAME": env.str("DB_NAME", default=""),
+        "USER": env.str("DB_USER", default=""),
+        "PASSWORD": env.str("DB_PASSWORD", default=""),
         "HOST": env.str("DB_HOST", default="127.0.0.1"),
         "PORT": env.str("DB_PORT", default="5432"),
     },
-    "sqlite3": {
+    "sqlite": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     },
@@ -141,7 +137,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/backend_static/"
+STATIC_ROOT = BASE_DIR / "staticfiles" / "backend_static"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -153,10 +150,9 @@ AUTH_USER_MODEL = "users.User"
 
 # DRF
 REST_FRAMEWORK = {
-    # TODO: Enable JSONRenderer in production
-    # 'DEFAULT_RENDERER_CLASSES': [
-    #     'rest_framework.renderers.JSONRenderer',
-    # ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
     ],
@@ -188,11 +184,18 @@ SPECTACULAR_SETTINGS = {
             - retrieve diagrams shared to them.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.12.0-dev",
+    "VERSION": "1.12.1-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
-# TODO: set correct port
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    env.str("CORS_ALLOWED_HOST", default="localhost"),
+]
+
 # django-cors-headers
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    env.str("CORS_ALLOWED_ORIGIN", default="http://localhost:3000"),
 ]

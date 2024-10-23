@@ -1,37 +1,23 @@
-/* Example of creating superuser role to manage the database. */
-CREATE ROLE
-    postgres  -- default name can be changed
-WITH
-    PASSWORD 'postgres'  -- default password should be changed
-    SUPERUSER
-    CREATEDB
-    CREATEROLE
-    LOGIN
-    REPLICATION
-    BYPASSRLS;
-
-
 /*
 The "uml_diagrams_api_user" role is responsible for interacting
 with the database on behalf of the application itself.
 This role is dedicated to the application and should be granted the minimum
 necessary permissions to perform its required database operations.
 
-Before proceeding, please ensure that there is another superuser role (or create it by
-example above) before proceeding to lower the privileges of application user role.
-
-See about privileges details: https://www.postgresql.org/docs/current/sql-createrole.html
+See available privileges at: https://www.postgresql.org/docs/current/sql-createrole.html
 */
-ALTER ROLE uml_diagrams_api_user
+CREATE ROLE
+    uml_diagrams_api_user
+WITH
+    PASSWORD 'some_secret_password'  -- password can be changed
     NOSUPERUSER
-    NOCREATEDB
-	NOCREATEROLE
-	NOINHERIT
-	NOLOGIN
-	NOREPLICATION
-	NOBYPASSRLS;
+    CREATEDB
+    NOCREATEROLE
+    NOINHERIT
+    LOGIN
+    NOREPLICATION
+    NOBYPASSRLS;
 
-
-/* List users. */
-SELECT *
-FROM pg_roles;
+CREATE DATABASE 'uml_diagrams';
+GRANT ALL PRIVILEGES ON DATABASE 'uml_diagrams' TO 'uml_diagrams_api_user';
+GRANT ALL PRIVILEGES ON SCHEMA public TO uml_diagrams_api_user; -- should be connected to 'uml_diagrams' DB

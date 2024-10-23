@@ -1,0 +1,17 @@
+/.idea
+/.git
+/.pytest_cache
+/.venv
+/db_dumps
+/deploy
+/tests
+.$design.drawio.bkp
+.gitignore
+.pre-commit-config.yaml
+db.sqlite3
+design.drawio
+docker-script.ps1
+Makefile
+pyproject.toml
+pytest.ini
+requirements-dev.txt
