@@ -12,7 +12,7 @@ for managing Docker containers in a Windows environment for dev. purpose to:
     - remove a PostgreSQL container;
     - run shell in PostgreSQL container;
     - run psql in PostgreSQL container (as superuser);
-    - build a Docker image for the app;
+    - ... etc. for app and nginx containers.
 
 Example usage in PowerShell to run container being in the project root directory:
     ./docker-script docker-run-postgres
@@ -57,7 +57,8 @@ function docker-kill-postgres {
 }
 function docker-remove-postgres {
     docker rm uml-diagrams-postgres;
-    echo "WARN: postgres data volume 'uml_diagrams_pg_db_data' should be removed manually (e.g. `docker volume rm uml_diagrams_pg_db_data`)."
+    echo "WARN: postgres data volume 'uml_diagrams_pg_db_data' should be removed manually (e.g. `docker volume rm uml_diagrams_pg_db_data`).";
+    echo "WARN: docker network 'uml_diagrams_net' should be removed manually (e.g. `docker network rm uml_diagrams_net`)."
 }
 function docker-shell-postgres {
     docker exec -it uml-diagrams-postgres bash
@@ -96,7 +97,8 @@ function docker-kill-app {
 }
 function docker-remove-app {
     docker rm ${CONTAINER_NAME};
-    echo "WARN: app static files volume 'uml_diagrams_static' should be removed manually (e.g. `docker volume rm uml_diagrams_static`)."
+    echo "WARN: app static files volume 'uml_diagrams_static' should be removed manually (e.g. `docker volume rm uml_diagrams_static`).";
+    echo "WARN: docker network 'uml_diagrams_net' should be removed manually (e.g. `docker network rm uml_diagrams_net`)."
 }
 function docker-shell-app {
     docker exec -it ${CONTAINER_NAME} bash
@@ -129,7 +131,9 @@ function docker-kill-nginx {
     docker kill uml-diagrams-nginx
 }
 function docker-remove-nginx {
-    docker rm uml-diagrams-nginx
+    docker rm uml-diagrams-nginx;
+    echo "WARN: app static files volume 'uml_diagrams_static' should be removed manually (e.g. `docker volume rm uml_diagrams_static`).";
+    echo "WARN: docker network 'uml_diagrams_net' should be removed manually (e.g. `docker network rm uml_diagrams_net`)."
 }
 function docker-shell-nginx {
     docker exec -it uml-diagrams-nginx bash
@@ -150,26 +154,6 @@ function docker-create-net {
 }
 function docker-remove-net {
     docker network rm uml_diagrams_net
-}
-
-
-# Frontend
-function docker-build-front {
-    docker build `
-        --no-cache `
-        ./deploy/frontend `
-        --platform linux/amd64 `
-        -t uml-diagrams-frontend:latest
-}
-function docker-run-front {
-    docker run `
-        --name uml-diagrams-frontend `
-        --net uml_diagrams_net `
-        -p 5173:5173 `
-        -d uml-diagrams-frontend:latest
-}
-function docker-shell-front {
-    docker exec -it uml-diagrams-frontend bash
 }
 
 
@@ -258,27 +242,17 @@ switch ($target) {
         docker-shell-nginx
     }
     # Common
-    "docker-create-vol" {
-        docker-create-vol
+    "docker-create-vols" {
+        docker-create-vols
     }
-    "docker-remove-vol" {
-        docker-remove-vol
+    "docker-remove-vols" {
+        docker-remove-vols
     }
     "docker-create-net" {
         docker-create-net
     }
     "docker-remove-net" {
         docker-remove-net
-    }
-    # Frontend
-    "docker-build-front" {
-        docker-build-front
-    }
-    "docker-run-front" {
-        docker-run-front
-    }
-    "docker-shell-front" {
-        docker-shell-front
     }
     # Compose
     "docker-compose-up" {

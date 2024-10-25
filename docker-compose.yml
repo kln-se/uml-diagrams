@@ -40,7 +40,7 @@ services:
         restart: unless-stopped
         healthcheck:
             test: [ "CMD-SHELL", "curl -f -I http://localhost:8000/health-check/" ]
-            start_period: 5s
+            start_period: 10s
             interval: 5s
             timeout: 5s
             retries: 3
@@ -58,6 +58,19 @@ services:
         ports:
             - "8081:80"
         restart: unless-stopped
+        depends_on:
+            api:
+                condition: service_healthy
+
+    frontend:
+        container_name: uml-diagrams-frontend
+        image: venalum/uml_frontend:dev7
+        env_file: .env
+        volumes:
+            - static:/app/staticfiles/dist
+        networks:
+            - uml_diagrams_net
+        command: npm run build
         depends_on:
             api:
                 condition: service_healthy

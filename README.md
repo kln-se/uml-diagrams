@@ -60,6 +60,10 @@ DB_PORT=5432
 POSTGRES_USER=<some-username>
 POSTGRES_PASSWORD=<some-password>
 POSTGRES_DB=<some-database-name>
+
+# Frontend
+# Host and port where the frontend is served, for example: http://127.0.0.1:3000
+VITE_API_URL=http://<some-host>:<some-port>/
 ```
 2.1.6.1. By the default the PostgreSQL database will be used.
 *It is assumed that the official postgres image from dockerhub is used.*
@@ -102,6 +106,8 @@ python manage.py runserver <port>
 ```
 
 ## 2.2. Deploy
+
+Make sure that `.env` file is configured correctly (see 2.1.6).
 
 2.2.1 To deploy the project to the server you can use the following command:
 ```shell

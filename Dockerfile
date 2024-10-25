@@ -20,7 +20,7 @@ COPY . .
 ENV DJANGO_READ_ENV_FILE=False
 ENV DJANGO_DEBUG_MODE=False
 # DB_HOST is set to PostgreSQL container name to be able to use it by the app via docker network
-ENV DB_HOST=uml-diagrams-postgres-db
+ENV DB_HOST=uml-diagrams-postgres
 
 STOPSIGNAL SIGINT
 
