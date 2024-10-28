@@ -62,7 +62,7 @@ POSTGRES_PASSWORD=<some-password>
 POSTGRES_DB=<some-database-name>
 
 # Frontend
-# Host and port where the frontend is served, for example: http://127.0.0.1:3000
+# Host and port where the frontend is served, for example: http://127.0.0.1:3000/
 VITE_API_URL=http://<some-host>:<some-port>/
 ```
 2.1.6.1. By the default the PostgreSQL database will be used.

@@ -12,18 +12,18 @@ for managing Docker containers in a Windows environment for dev. purpose to:
     - remove a PostgreSQL container;
     - run shell in PostgreSQL container;
     - run psql in PostgreSQL container (as superuser);
-    - ... etc. for app and nginx containers.
+    - ... etc. for api and nginx containers.
 
 Example usage in PowerShell to run container being in the project root directory:
     ./docker-script docker-run-postgres
 #>
 
 # Vars
-$IMAGE_NAME = "uml-diagrams-api"
-$CONTAINER_NAME = "uml-diagrams-api"
-$APP_VERSION = "latest"
+$API_IMAGE_NAME = "uml-diagrams-api"
+$API_CONTAINER_NAME = "uml-diagrams-api"
+$API_VERSION = "latest"
 # For incoming connections
-$EXT_PORT = 8081
+$GATEWAY_EXT_PORT = 8081
 
 
 # PostgreSQL
@@ -68,40 +68,48 @@ function docker-psql-postgres {
 }
 
 
-# App
-function docker-build-app {
+# API
+function docker-build-api {
     docker build `
         . `
         --platform linux/amd64 `
-        -t ${IMAGE_NAME}:${APP_VERSION}
+        -t ${API_IMAGE_NAME}:${API_VERSION}
 }
-function docker-run-app {
+function docker-run-api {
     docker run `
-        --name ${CONTAINER_NAME} `
+        --name ${API_CONTAINER_NAME} `
         --env-file .env `
         --net uml_diagrams_net `
         -v uml_diagrams_static:/app/staticfiles `
         -e DB_HOST=uml-diagrams-postgres `
         -e DJANGO_DEBUG_MODE=True `
         -p 8000:8000 `
-        -d ${IMAGE_NAME}:${APP_VERSION}
+        -d ${API_IMAGE_NAME}:${API_VERSION}
 }
-function docker-restart-app {
-    docker restart ${CONTAINER_NAME}
+function docker-restart-api {
+    docker restart ${API_CONTAINER_NAME}
 }
-function docker-stop-app {
-    docker stop ${CONTAINER_NAME}
+function docker-stop-api {
+    docker stop ${API_CONTAINER_NAME}
 }
-function docker-kill-app {
-    docker kill ${CONTAINER_NAME}
+function docker-kill-api {
+    docker kill ${API_CONTAINER_NAME}
 }
-function docker-remove-app {
-    docker rm ${CONTAINER_NAME};
+function docker-remove-api {
+    docker rm ${API_CONTAINER_NAME};
     echo "WARN: app static files volume 'uml_diagrams_static' should be removed manually (e.g. `docker volume rm uml_diagrams_static`).";
     echo "WARN: docker network 'uml_diagrams_net' should be removed manually (e.g. `docker network rm uml_diagrams_net`)."
 }
-function docker-shell-app {
-    docker exec -it ${CONTAINER_NAME} bash
+function docker-shell-api {
+    docker exec -it ${API_CONTAINER_NAME} bash
+}
+function docker-save-api {
+    docker save -o "${API_IMAGE_NAME}.${API_VERSION}.tar" ${API_IMAGE_NAME}:${API_VERSION};
+    echo "INFO: api image saved as '${API_IMAGE_NAME}.${API_VERSION}.tar'"
+}
+function docker-load-api {
+    docker load -i "${API_IMAGE_NAME}.${API_VERSION}.tar";
+    echo "INFO: api image loaded from '${API_IMAGE_NAME}.${API_VERSION}.tar'"
 }
 
 
@@ -118,7 +126,7 @@ function docker-run-nginx {
         --name uml-diagrams-nginx `
         --net uml_diagrams_net `
         -v uml_diagrams_static:/staticfiles `
-        -p ${EXT_PORT}:80 `
+        -p ${GATEWAY_EXT_PORT}:80 `
         -d uml-diagrams-nginx:latest
 }
 function docker-restart-nginx {
@@ -161,6 +169,15 @@ function docker-remove-net {
 function docker-compose-up {
     docker-compose --env-file .env up -d
 }
+function docker-compose-down {
+    docker-compose -p uml-diagrams down
+}
+function docker-compose-stop {
+    docker-compose -p uml-diagrams stop
+}
+function docker-compose-restart {
+    docker-compose restart
+}
 function docker-compose-del {
     docker-compose -p uml-diagrams down -v --rmi local;
     docker network rm -f uml_diagrams_net
@@ -197,27 +214,33 @@ switch ($target) {
     "docker-psql-postgres" {
         docker-psql-postgres
     }
-    "docker-build-app" {
-        docker-build-app
+    "docker-build-api" {
+        docker-build-api
     }
-    # App
-    "docker-run-app" {
-        docker-run-app
+    # API
+    "docker-run-api" {
+        docker-run-api
     }
-    "docker-restart-app" {
-        docker-restart-app
+    "docker-restart-api" {
+        docker-restart-api
     }
-    "docker-stop-app" {
-        docker-stop-app
+    "docker-stop-api" {
+        docker-stop-api
     }
-    "docker-kill-app" {
-        docker-kill-app
+    "docker-kill-api" {
+        docker-kill-api
     }
-    "docker-remove-app" {
-        docker-remove-app
+    "docker-remove-api" {
+        docker-remove-api
     }
-    "docker-shell-app" {
-        docker-shell-app
+    "docker-shell-api" {
+        docker-shell-api
+    }
+    "docker-save-api" {
+        docker-save-api
+    }
+    "docker-load-api" {
+        docker-load-api
     }
     # Nginx
     "docker-build-nginx" {
@@ -257,6 +280,15 @@ switch ($target) {
     # Compose
     "docker-compose-up" {
         docker-compose-up
+    }
+    "docker-compose-down" {
+        docker-compose-down
+    }
+    "docker-compose-stop" {
+        docker-compose-stop
+    }
+    "docker-compose-restart" {
+        docker-compose-restart
     }
     "docker-compose-del" {
         docker-compose-del

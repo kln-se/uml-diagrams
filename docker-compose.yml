@@ -32,7 +32,7 @@ services:
         env_file: .env
         environment:
             - DB_HOST=uml-diagrams-postgres
-            - DJANGO_DEBUG_MODE=True
+            - DJANGO_DEBUG_MODE=False
         volumes:
             - static:/app/staticfiles
         networks:
@@ -64,13 +64,13 @@ services:
 
     frontend:
         container_name: uml-diagrams-frontend
-        image: venalum/uml_frontend:dev7
+        image: venalum/uml_frontend:dev8
         env_file: .env
         volumes:
             - static:/app/staticfiles/dist
+        command: npm run build && exit 0
         networks:
             - uml_diagrams_net
-        command: npm run build
         depends_on:
             api:
                 condition: service_healthy
