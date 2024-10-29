@@ -15,3 +15,7 @@ Makefile
 pyproject.toml
 pytest.ini
 requirements-dev.txt
+.env
+.dockerignore
+Dockerfile
+docker-compose.yml

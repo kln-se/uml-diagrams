@@ -26,6 +26,8 @@ STOPSIGNAL SIGINT
 
 EXPOSE 8000
 
+RUN chmod a+x ./entrypoint.sh
+
 ENTRYPOINT ["./entrypoint.sh"]
 
 # WSGI application should be named as 'config.wsgi' because wsgi.py is located in config directory

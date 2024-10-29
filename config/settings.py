@@ -184,18 +184,16 @@ SPECTACULAR_SETTINGS = {
             - retrieve diagrams shared to them.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.12.3-dev",
+    "VERSION": "1.12.4-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
 ALLOWED_HOSTS = [
     "localhost",
-    "127.0.0.1",
     env.str("CORS_ALLOWED_HOST", default="localhost"),
 ]
 
-# django-cors-headers
+# See https://pypi.org/project/django-cors-headers/
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
     env.str("CORS_ALLOWED_ORIGIN", default="http://localhost:3000"),
 ]

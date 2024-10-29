@@ -21,7 +21,7 @@ Example usage in PowerShell to run container being in the project root directory
 # Vars
 $API_IMAGE_NAME = "uml-diagrams-api"
 $API_CONTAINER_NAME = "uml-diagrams-api"
-$API_VERSION = "latest"
+$API_VERSION = "1.12.3-dev"
 # For incoming connections
 $GATEWAY_EXT_PORT = 8081
 
@@ -104,12 +104,12 @@ function docker-shell-api {
     docker exec -it ${API_CONTAINER_NAME} bash
 }
 function docker-save-api {
-    docker save -o "${API_IMAGE_NAME}.${API_VERSION}.tar" ${API_IMAGE_NAME}:${API_VERSION};
-    echo "INFO: api image saved as '${API_IMAGE_NAME}.${API_VERSION}.tar'"
+    docker save -o "${API_IMAGE_NAME}.tar" ${API_IMAGE_NAME}:${API_VERSION};
+    echo "INFO: api image saved as '${API_IMAGE_NAME}.tar'"
 }
 function docker-load-api {
-    docker load -i "${API_IMAGE_NAME}.${API_VERSION}.tar";
-    echo "INFO: api image loaded from '${API_IMAGE_NAME}.${API_VERSION}.tar'"
+    docker load -i "${API_IMAGE_NAME}.tar";
+    echo "INFO: api image loaded from '${API_IMAGE_NAME}.tar'"
 }
 
 
@@ -167,7 +167,7 @@ function docker-remove-net {
 
 # Compose
 function docker-compose-up {
-    docker-compose --env-file .env up -d
+    docker-compose up -d
 }
 function docker-compose-down {
     docker-compose -p uml-diagrams down
