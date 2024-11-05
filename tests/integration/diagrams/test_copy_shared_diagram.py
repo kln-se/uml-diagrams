@@ -38,7 +38,7 @@ class TestCopySharedDiagram:
         )}"
         response = client.post(path=url, data=data_to_set)
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["id"] != original_diagram.id
+        assert response.data["diagram_id"] != original_diagram.id
         assert response.data["title"] == f"Copy of {original_diagram.title}"
         assert (
             response.data["description"]
@@ -48,7 +48,7 @@ class TestCopySharedDiagram:
         assert response.data["created_at"] > original_diagram.created_at.strftime(
             "%Y-%m-%dT%H:%M:%S.%fZ"
         )
-        copied_diagram = Diagram.objects.get(id=response.data["id"])
+        copied_diagram = Diagram.objects.get(id=response.data["diagram_id"])
         assert copied_diagram.owner == collaborator.shared_to
         assert copied_diagram.json == original_diagram.json
         assert copied_diagram.title == f"Copy of {original_diagram.title}"

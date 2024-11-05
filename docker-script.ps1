@@ -21,7 +21,7 @@ Example usage in PowerShell to run container being in the project root directory
 # Vars
 $API_IMAGE_NAME = "uml-diagrams-api"
 $API_CONTAINER_NAME = "uml-diagrams-api"
-$API_VERSION = "1.12.3-dev"
+$API_VERSION = "1.13.0-dev"
 # For incoming connections
 $GATEWAY_EXT_PORT = 8081
 
@@ -179,8 +179,7 @@ function docker-compose-restart {
     docker-compose restart
 }
 function docker-compose-del {
-    docker-compose -p uml-diagrams down -v --rmi local;
-    docker network rm -f uml_diagrams_net
+    docker-compose -p uml-diagrams down -v --rmi local
 }
 
 

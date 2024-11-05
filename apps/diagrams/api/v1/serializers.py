@@ -78,12 +78,13 @@ class DiagramCopySerializer(serializers.ModelSerializer):
     Used to copy diagrams via POST api/v1/diagrams/{uuid}/copy/
     """
 
+    diagram_id = serializers.ReadOnlyField(source="id")
     title = serializers.ReadOnlyField()
 
     class Meta:
         model = Diagram
         fields = [
-            "id",
+            "diagram_id",
             "title",
             "description",
             "created_at",

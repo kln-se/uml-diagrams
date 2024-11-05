@@ -5,7 +5,7 @@ volumes:
     static:
 
 networks:
-    uml_diagrams_net:
+    net:
 
 services:
     postgres:
@@ -15,7 +15,7 @@ services:
         volumes:
             - pg_db_data:/var/lib/postgresql/data
         networks:
-            - uml_diagrams_net
+            - net
         restart: unless-stopped
         ports:
             - "5435:5432"
@@ -29,7 +29,7 @@ services:
     api:
         container_name: uml-diagrams-api
         build: ./
-        image: uml-diagrams-api:1.12.4-dev
+        image: uml-diagrams-api:1.13.0-dev
         env_file: .env
         environment:
             - DB_HOST=uml-diagrams-postgres
@@ -37,7 +37,7 @@ services:
         volumes:
             - static:/app/staticfiles
         networks:
-            - uml_diagrams_net
+            - net
         restart: unless-stopped
         healthcheck:
             test: [ "CMD-SHELL", "curl -f -I http://localhost:8000/health-check/" ]
@@ -55,7 +55,7 @@ services:
         volumes:
             - static:/staticfiles
         networks:
-            - uml_diagrams_net
+            - net
         ports:
             - "8081:80"
         restart: unless-stopped
@@ -71,7 +71,7 @@ services:
             - static:/app/staticfiles/dist
         command: npm run build && exit 0
         networks:
-            - uml_diagrams_net
+            - net
         depends_on:
             api:
                 condition: service_healthy

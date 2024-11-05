@@ -29,7 +29,7 @@ docker-compose-restart:
 	sudo docker compose restart
 
 docker-compose-del:
-	sudo docker compose -p $$PROJECT_NAME down -v --rmi local && sudo docker network rm $$NETWORK_NAME
+	sudo docker compose -p $$PROJECT_NAME down -v --rmi local
 
 
 # Postgres

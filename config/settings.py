@@ -184,12 +184,13 @@ SPECTACULAR_SETTINGS = {
             - retrieve diagrams shared to them.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.12.4-dev",
+    "VERSION": "1.13.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
 ALLOWED_HOSTS = [
     "localhost",
+    "127.0.0.1",
     env.str("CORS_ALLOWED_HOST", default="localhost"),
 ]
 

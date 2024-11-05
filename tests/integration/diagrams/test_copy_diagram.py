@@ -29,7 +29,7 @@ class TestCopyDiagram:
         )
         response = client.post(path=url, data=data_to_set)
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["id"] != diagram_owned_by_user.id
+        assert response.data["diagram_id"] != diagram_owned_by_user.id
         assert response.data["title"] == f"Copy of {diagram_owned_by_user.title}"
         assert (
             response.data["description"]
@@ -39,7 +39,7 @@ class TestCopyDiagram:
         assert response.data["created_at"] > diagram_owned_by_user.created_at.strftime(
             "%Y-%m-%dT%H:%M:%S.%fZ"
         )
-        copied_diagram = Diagram.objects.get(id=response.data["id"])
+        copied_diagram = Diagram.objects.get(id=response.data["diagram_id"])
         assert copied_diagram.owner == logged_in_user
         assert copied_diagram.json == diagram_owned_by_user.json
 
@@ -78,7 +78,7 @@ class TestCopyDiagram:
         )}"
         response = client.post(path=url, data=data_to_set)
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["id"] != diagram_owned_by_another_user.id
+        assert response.data["diagram_id"] != diagram_owned_by_another_user.id
         assert (
             response.data["title"] == f"Copy of {diagram_owned_by_another_user.title}"
         )
@@ -90,6 +90,6 @@ class TestCopyDiagram:
         assert response.data[
             "created_at"
         ] > diagram_owned_by_another_user.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        copied_diagram = Diagram.objects.get(id=response.data["id"])
+        copied_diagram = Diagram.objects.get(id=response.data["diagram_id"])
         assert copied_diagram.owner == logged_in_admin
         assert copied_diagram.json == diagram_owned_by_another_user.json

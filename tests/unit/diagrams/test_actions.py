@@ -43,7 +43,7 @@ class TestActionCopySharedDiagram:
         assert viewset.get_object() == original_diagram
         response = viewset.copy_shared_diagram(request=request)
         assert response.status_code == status.HTTP_201_CREATED
-        copied_diagram = Diagram.objects.get(id=response.data["id"])
+        copied_diagram = Diagram.objects.get(id=response.data["diagram_id"])
         assert copied_diagram.description == data_to_set["description"]
         assert copied_diagram.owner == collaborator.shared_to
         assert copied_diagram.title == f"Copy of {original_diagram.title}"
