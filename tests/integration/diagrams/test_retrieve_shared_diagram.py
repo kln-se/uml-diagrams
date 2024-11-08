@@ -19,7 +19,7 @@ def test_retrieve_shared_diagram_by_authenticated_collaborator(
     response = client.get(f"{SHARED_DIAGRAMS_URL}{sharing_invitation.diagram.id}/")
     assert response.status_code == status.HTTP_200_OK
     diagram_data_as_dict = {
-        "id": str(sharing_invitation.diagram.id),
+        "diagram_id": str(sharing_invitation.diagram.id),
         "title": sharing_invitation.diagram.title,
         "owner_id": str(sharing_invitation.diagram.owner.id),
         "owner_email": sharing_invitation.diagram.owner.email,

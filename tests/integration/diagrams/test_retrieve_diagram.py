@@ -18,7 +18,7 @@ def test_retrieve_diagram_by_authenticated_owner(
     response = client.get(f"{DIAGRAMS_URL}{diagram_owned_by_user.id}/")
     assert response.status_code == status.HTTP_200_OK
     diagram_data_as_dict = {
-        "id": str(diagram_owned_by_user.id),
+        "diagram_id": str(diagram_owned_by_user.id),
         "title": diagram_owned_by_user.title,
         "owner_id": str(diagram_owned_by_user.owner.id),
         "owner_email": diagram_owned_by_user.owner.email,
@@ -59,7 +59,7 @@ def test_retrieve_diagram_admin_can_retrieve_any_diagram(
     response = client.get(f"{DIAGRAMS_URL}{diagram_owned_by_another_user.id}/")
     assert response.status_code == status.HTTP_200_OK
     diagram_data_as_dict = {
-        "id": str(diagram_owned_by_another_user.id),
+        "diagram_id": str(diagram_owned_by_another_user.id),
         "title": diagram_owned_by_another_user.title,
         "owner_id": str(diagram_owned_by_another_user.owner.id),
         "owner_email": diagram_owned_by_another_user.owner.email,

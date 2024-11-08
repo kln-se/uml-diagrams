@@ -37,6 +37,7 @@ from apps.users.models import User
 )
 # endregion
 class DiagramSerializer(serializers.ModelSerializer):
+    diagram_id = serializers.ReadOnlyField(source="id")
     json = serializers.JSONField()
     owner_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=User.objects.all()
@@ -46,7 +47,7 @@ class DiagramSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diagram
         fields = [
-            "id",
+            "diagram_id",
             "title",
             "json",
             "description",

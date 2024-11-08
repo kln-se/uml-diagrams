@@ -23,7 +23,7 @@ def test_create_diagram_by_user(client: APIClient, logged_in_user: User) -> None
     }
     response = client.post(path=DIAGRAMS_URL, data=data_to_create)
     assert response.status_code == status.HTTP_201_CREATED
-    diagram = Diagram.objects.get(id=response.data["id"])
+    diagram = Diagram.objects.get(id=response.data["diagram_id"])
     assert diagram.owner == logged_in_user
     assert diagram.title == response.data["title"] == data_to_create["title"]
     assert (

@@ -29,7 +29,7 @@ def test_update_diagram_by_authenticated_owner(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_user.id}/", data=data_to_update
     )
     assert response.status_code == status.HTTP_200_OK
-    diagram = Diagram.objects.get(id=response.data["id"])
+    diagram = Diagram.objects.get(id=response.data["diagram_id"])
     assert diagram.title == response.data["title"] == data_to_update["title"]
     assert (
         diagram.description
@@ -89,7 +89,7 @@ def test_update_any_diagram_by_admin(client: APIClient, logged_in_admin: User) -
         path=f"{DIAGRAMS_URL}{diagram_owned_by_another_user.id}/", data=data_to_update
     )
     assert response.status_code == status.HTTP_200_OK
-    diagram = Diagram.objects.get(id=response.data["id"])
+    diagram = Diagram.objects.get(id=response.data["diagram_id"])
     assert diagram.title == response.data["title"] == data_to_update["title"]
     assert (
         diagram.description

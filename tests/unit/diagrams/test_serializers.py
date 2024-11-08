@@ -27,7 +27,7 @@ class TestDiagramSerializer:
         """
         serializer = DiagramSerializer(diagram)
         assert serializer.data == {
-            "id": str(diagram.id),
+            "diagram_id": diagram.id,
             "owner_id": diagram.owner.id,
             "owner_email": diagram.owner.email,
             "title": diagram.title,

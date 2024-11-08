@@ -40,7 +40,7 @@ def test_partial_update_diagram_by_authenticated_owner(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_user.id}/", data=data_to_update
     )
     assert response.status_code == status.HTTP_200_OK
-    diagram = Diagram.objects.get(id=response.data["id"])
+    diagram = Diagram.objects.get(id=response.data["diagram_id"])
     if field_name == "json":
         assert (diagram.json == loads(data_to_update[field_name])) == expected
     else:
@@ -63,7 +63,7 @@ def test_partial_update_diagram_owner_by_authenticated_owner(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_user.id}/", data=data_to_update
     )
     assert response.status_code == status.HTTP_200_OK
-    diagram = Diagram.objects.get(id=response.data["id"])
+    diagram = Diagram.objects.get(id=response.data["diagram_id"])
     assert diagram.owner == logged_in_user
 
 
@@ -121,7 +121,7 @@ def test_partial_update_any_diagram_by_admin(
         path=f"{DIAGRAMS_URL}{diagram_owned_by_user.id}/", data=data_to_update
     )
     assert response.status_code == status.HTTP_200_OK
-    diagram = Diagram.objects.get(id=response.data["id"])
+    diagram = Diagram.objects.get(id=response.data["diagram_id"])
     if field_name == "owner_id":
         assert (getattr(diagram, field_name) == data_to_update[field_name]) == expected
     elif field_name == "json":
