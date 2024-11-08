@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.test import APIRequestFactory
 
 from apps.sharings.api.v1.pagination import CollaboratorViewSetPagination
-from apps.sharings.api.v1.permissions import IsAdminOrIsOwner
+from apps.sharings.api.v1.permissions import IsAdminOrIsSharingOwner
 from apps.sharings.api.v1.views import CollaboratorViewSet
 from apps.users.constants import UserRoles
 from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
@@ -53,7 +53,7 @@ class TestCollaboratorViewSet:
 
     def test_permission_class_correct(self) -> None:
         viewset = CollaboratorViewSet()
-        assert viewset.permission_classes == [IsAuthenticated, IsAdminOrIsOwner]
+        assert viewset.permission_classes == [IsAuthenticated, IsAdminOrIsSharingOwner]
 
     def test_collaborator_viewset_ordering_options_correct(self) -> None:
         viewset = CollaboratorViewSet()

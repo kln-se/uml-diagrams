@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
 from apps.sharings.api.v1.pagination import CollaboratorViewSetPagination
-from apps.sharings.api.v1.permissions import IsAdminOrIsOwner
+from apps.sharings.api.v1.permissions import IsAdminOrIsSharingOwner
 from apps.sharings.api.v1.serializers import CollaboratorSerializer
 from apps.sharings.apps import SharingsConfig
 from apps.sharings.models import Collaborator
@@ -81,7 +81,7 @@ class CollaboratorViewSet(
 
     queryset: QuerySet[Collaborator] = Collaborator.objects.all()
     serializer_class = CollaboratorSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrIsOwner]
+    permission_classes = [IsAuthenticated, IsAdminOrIsSharingOwner]
     http_method_names = ["get", "patch", "delete"]
     pagination_class = CollaboratorViewSetPagination
     filter_backends = [filters.OrderingFilter]

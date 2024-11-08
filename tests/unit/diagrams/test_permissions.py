@@ -1,18 +1,18 @@
 from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 
-from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
+from apps.diagrams.api.v1.permissions import IsAdminOrIsDiagramOwner
 from apps.users.constants import UserRoles
 from tests.factories import DiagramFactory, UserFactory
 
 
-def test_is_admin_or_is_owner_permission_granted_for_owner() -> None:
+def test_is_admin_or_is_diagram_owner_permission_granted_for_owner() -> None:
     """
     GIVEN a user who owns the diagram
     WHEN the permission is checked for the user
     THEN the permission is granted
     """
-    permission = IsAdminOrIsOwner()
+    permission = IsAdminOrIsDiagramOwner()
     request = APIRequestFactory().get("/")
     user = UserFactory(role=UserRoles.USER)
     request.user = user
@@ -20,13 +20,13 @@ def test_is_admin_or_is_owner_permission_granted_for_owner() -> None:
     assert permission.has_object_permission(request, APIView(), diagram_owned_by_user)
 
 
-def test_is_admin_or_is_owner_permission_not_granted_for_not_owner() -> None:
+def test_is_admin_or_is_diagram_owner_permission_not_granted_for_not_owner() -> None:
     """
     GIVEN a user who NOT owns the diagram and another user who owns the diagram
     WHEN the permission is checked for the user
     THEN the permission is not granted
     """
-    permission = IsAdminOrIsOwner()
+    permission = IsAdminOrIsDiagramOwner()
     request = APIRequestFactory().get("/")
     user = UserFactory(role=UserRoles.USER)
     request.user = user
@@ -42,7 +42,7 @@ def test_is_admin_or_is_owner_permission_granted_for_admin() -> None:
     WHEN the permission is checked for the admin
     THEN the permission is granted
     """
-    permission = IsAdminOrIsOwner()
+    permission = IsAdminOrIsDiagramOwner()
     request = APIRequestFactory().get("/")
     admin = UserFactory(role=UserRoles.ADMIN)
     request.user = admin

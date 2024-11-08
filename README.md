@@ -32,24 +32,23 @@ pip install -r requirements.txt
 ```
 2.1.6. Provide `.env` file to the project root folder with the following variables:
 ```env
-# Django
+# Django basic
 SECRET_KEY=<some-secret-key>
 # Should be overridden when running container like "docker run ... -e DJANGO_DEBUG_MODE=False"
 DJANGO_DEBUG_MODE=True
 
-# CORS allowed host & port details for config/settings.py
-CORS_ALLOWED_HOST=<some-host>
-CORS_ALLOWED_ORIGIN=http://<some-host>:<some-port>
-
+# Admin panel
 # Basic superuser (admin) account for the application
 SUPERUSER_EMAIL=<some-superuser-email>
 SUPERUSER_PASSWORD=<some-superuser-password>
 
+# Database general
 # User role to interact with the database on behalf of the application itself
 # This role is created in deploy/db/user_permissions.sql during postgres image build (see deploy/db/Dockerfile)
 DB_USER=<some-username>
 DB_PASSWORD=<some-password>
 DB_NAME=<some-database-name>
+# For local development is set as 127.0.0.1.
 # For docker it will be set to the docker postgres container name via ENV var in Dockerfile and "docker run  -e DB_HOST=..." command
 DB_HOST=localhost
 DB_PORT=5432
@@ -61,7 +60,12 @@ POSTGRES_USER=<some-username>
 POSTGRES_PASSWORD=<some-password>
 POSTGRES_DB=<some-database-name>
 
-# Frontend
+# Backend
+# CORS allowed host & port details for config/settings.py
+CORS_ALLOWED_HOST=<some-host>
+CORS_ALLOWED_ORIGIN=http://<some-host>:<some-port>
+
+# Frontend (Optional)
 # Host and port where the frontend is served, for example: http://127.0.0.1:3000/
 VITE_API_URL=http://<some-host>:<some-port>/
 ```
@@ -110,9 +114,19 @@ python manage.py runserver <port>
 Make sure that `.env` file is configured correctly (see 2.1.6).
 
 2.2.1 To deploy the project to the server you can use the following command:
+
+On Linux:
 ```shell
-docker-compose --env-file .env up -d
+make docker-compose-up
 ```
+**Installed [GNU Make](https://www.gnu.org/software/make/) tool is required.** Or you can use direct docker command under `docker-compose-up` in `Makefile`.
+
+On Windows:
+```shell
+./docker-script docker-compose-up
+```
+**You can find more commands in the `docker-script.ps1` script and `Makefile` in the project root folder.**
+
 2.2.2. Manual preparation (optional)
 
 Upon the start of the application container, the `entrypoint.sh` script will be executed.

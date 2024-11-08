@@ -3,22 +3,24 @@ from typing import List
 import pytest
 from django.http.response import Http404
 from rest_framework import filters
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import OR, IsAuthenticated
 from rest_framework.serializers import ModelSerializer
 from rest_framework.test import APIRequestFactory
 
 from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
-from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
+from apps.diagrams.api.v1.permissions import IsAdminOrIsDiagramOwner
 from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
     DiagramListSerializer,
     DiagramSerializer,
     SharedDiagramListSerializer,
+    SharedDiagramSaveSerializer,
 )
 from apps.diagrams.api.v1.views import DiagramViewSet, SharedWithMeDiagramViewSet
 from apps.sharings.api.v1.permissions import (
     IsCollaborator,
     IsCollaboratorAndHasViewCopyPermission,
+    IsCollaboratorAndHasViewEditPermission,
 )
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from apps.users.constants import UserRoles
@@ -223,7 +225,7 @@ class TestDiagramViewSet:
 
     def test_permission_class_correct(self) -> None:
         viewset = DiagramViewSet()
-        assert viewset.permission_classes == [IsAuthenticated, IsAdminOrIsOwner]
+        assert viewset.permission_classes == [IsAuthenticated, IsAdminOrIsDiagramOwner]
 
     def test_viewset_ordering_options_correct(self) -> None:
         viewset = DiagramViewSet()
@@ -282,6 +284,7 @@ class TestSharedWithMeDiagramViewSet:
             ("list", SharedDiagramListSerializer),
             ("retrieve", DiagramSerializer),
             ("copy_shared_diagram", DiagramCopySerializer),
+            ("save_shared_diagram", SharedDiagramSaveSerializer),
         ],
     )
     def test_get_serializer_class_correct(
@@ -303,7 +306,15 @@ class TestSharedWithMeDiagramViewSet:
             ("retrieve", [IsAuthenticated, IsCollaborator]),
             (
                 "copy_shared_diagram",
-                [IsAuthenticated, IsCollaboratorAndHasViewCopyPermission],
+                [
+                    IsAuthenticated,
+                    IsCollaboratorAndHasViewCopyPermission
+                    | IsCollaboratorAndHasViewEditPermission,
+                ],
+            ),
+            (
+                "save_shared_diagram",
+                [IsAuthenticated, IsCollaboratorAndHasViewEditPermission],
             ),
         ],
     )
@@ -314,7 +325,18 @@ class TestSharedWithMeDiagramViewSet:
         viewset = SharedWithMeDiagramViewSet(request=request)
         viewset.action = action
         for perm_obj, perm_class in zip(viewset.get_permissions(), permission_classes):
-            assert isinstance(perm_obj, perm_class)
+            # if several permissions are united with OR (| sign) clause
+            if isinstance(perm_obj, OR):
+                del perm_class.operator_class
+                for operand_obj_name, operand_class_name in zip(
+                    vars(perm_obj), vars(perm_class)
+                ):
+                    assert isinstance(
+                        getattr(perm_obj, operand_obj_name),
+                        getattr(perm_class, operand_class_name),
+                    )
+            else:
+                assert isinstance(perm_obj, perm_class)
 
     def test_viewset_ordering_options_correct(self) -> None:
         viewset = SharedWithMeDiagramViewSet()
@@ -333,4 +355,4 @@ class TestSharedWithMeDiagramViewSet:
 
     def test_shared_with_me_diagram_viewset_http_methods_correct(self) -> None:
         viewset = SharedWithMeDiagramViewSet()
-        assert viewset.http_method_names == ["get", "post"]
+        assert viewset.http_method_names == ["get", "post", "patch"]
