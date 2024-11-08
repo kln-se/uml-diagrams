@@ -1,8 +1,10 @@
+import pytest
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from apps.diagrams.models import Diagram
+from apps.sharings.constants import PermissionLevels
 from apps.users.models import User
 from tests.factories import CollaboratorFactory, DiagramFactory
 from tests.integration.diagrams.constants import SHARED_DIAGRAM_COPY_URL_NAME
@@ -13,12 +15,23 @@ class TestCopySharedDiagram:
     Testing route to @action copy_shared_diagram() inside SharedWithMeDiagramViewSet.
     """
 
+    @pytest.mark.parametrize(
+        ("permission_level", "status_code"),
+        [
+            (PermissionLevels.VIEWCOPY, status.HTTP_201_CREATED),
+            (PermissionLevels.VIEWEDIT, status.HTTP_201_CREATED),
+        ],
+    )
     def test_copy_shared_diagram_by_collaborator_with_appropriate_permission(
-        self, client: APIClient, logged_in_user: User
+        self,
+        client: APIClient,
+        logged_in_user: User,
+        permission_level: str,
+        status_code: int,
     ) -> None:
         """
         GIVEN a logged-in user who was shared a diagram to (i.e. collaborator) with
-        appropriate permission "view-copy"
+        appropriate permission "view-copy" (or "view-edit")
         WHEN he requests GET /api/v1/diagrams/shared-with-me/{diagram_id}/copy/
         THEN check that the diagram is copied and 200 OK is returned
         """
@@ -27,7 +40,7 @@ class TestCopySharedDiagram:
         collaborator = CollaboratorFactory(
             diagram=original_diagram,
             shared_to=logged_in_user,
-            permission_level="view-copy",
+            permission_level=permission_level,
         )
         data_to_set = {
             "description": "Copied.",
@@ -37,7 +50,7 @@ class TestCopySharedDiagram:
             kwargs={'pk': collaborator.diagram.pk}
         )}"
         response = client.post(path=url, data=data_to_set)
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == status_code
         assert response.data["diagram_id"] != original_diagram.id
         assert response.data["title"] == f"Copy of {original_diagram.title}"
         assert (
@@ -67,7 +80,7 @@ class TestCopySharedDiagram:
         collaborator = CollaboratorFactory(
             diagram=original_diagram,
             shared_to=logged_in_user,
-            permission_level="view-only",
+            permission_level=PermissionLevels.VIEWONLY,
         )
         data_to_set = {
             "description": "Copied.",
@@ -81,8 +94,20 @@ class TestCopySharedDiagram:
         assert Diagram.objects.count() == 1
         assert not Diagram.objects.filter(owner=logged_in_user).exists()
 
+    @pytest.mark.parametrize(
+        ("permission_level", "status_code"),
+        [
+            (PermissionLevels.VIEWONLY, status.HTTP_404_NOT_FOUND),
+            (PermissionLevels.VIEWCOPY, status.HTTP_404_NOT_FOUND),
+            (PermissionLevels.VIEWEDIT, status.HTTP_404_NOT_FOUND),
+        ],
+    )
     def test_copy_shared_diagram_try_to_copy_by_not_collaborator(
-        self, client: APIClient, logged_in_user: User
+        self,
+        client: APIClient,
+        logged_in_user: User,
+        permission_level: str,
+        status_code: int,
     ) -> None:
         """
         GIVEN a logged-in user who was not shared a diagram to. But he tried to copy it.
@@ -92,7 +117,7 @@ class TestCopySharedDiagram:
         original_diagram = DiagramFactory()
         # Create a sharing invitation
         some_collaborator = CollaboratorFactory(
-            diagram=original_diagram, permission_level="view-copy"
+            diagram=original_diagram, permission_level=permission_level
         )
         data_to_set = {
             "description": "I try to copy it anyway!",
@@ -102,6 +127,6 @@ class TestCopySharedDiagram:
             kwargs={'pk': some_collaborator.diagram.pk}
         )}"
         response = client.post(path=url, data=data_to_set)
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status_code
         assert Diagram.objects.count() == 1
         assert not Diagram.objects.filter(owner=logged_in_user).exists()

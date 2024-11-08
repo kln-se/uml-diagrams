@@ -62,8 +62,8 @@ class DiagramSerializer(serializers.ModelSerializer):
     examples=[
         OpenApiExample(
             name="JSON body example",
-            description="User can set **description** field in the request body.\n\n"
-            "The **title** field is read-only. It will be automatically "
+            description="User can set `description` field in the request body.\n\n"
+            "The `title` field is **read-only**. It will be automatically "
             "set to `Copy of {original_diagram_title}`.",
             value={
                 "description": "string",
@@ -75,7 +75,9 @@ class DiagramSerializer(serializers.ModelSerializer):
 # endregion
 class DiagramCopySerializer(serializers.ModelSerializer):
     """
-    Used to copy diagrams via POST api/v1/diagrams/{uuid}/copy/
+    Used to copy diagrams via:
+    - `POST api/v1/diagrams/{uuid}/copy/`;
+    - `POST api/v1/diagrams/shared-with-me/{uuid}/copy/`.
     """
 
     diagram_id = serializers.ReadOnlyField(source="id")
@@ -93,7 +95,8 @@ class DiagramCopySerializer(serializers.ModelSerializer):
 
 class DiagramListSerializer(serializers.ModelSerializer):
     """
-    Used to list diagrams via GET api/v1/diagrams/
+    Used to list diagrams via:
+    - `GET api/v1/diagrams/`.
     """
 
     diagram_id = serializers.ReadOnlyField(source="id")
@@ -114,7 +117,8 @@ class DiagramListSerializer(serializers.ModelSerializer):
 
 class SharedDiagramListSerializer(DiagramListSerializer):
     """
-    Used to list diagrams via GET api/v1/diagrams/shared-with-me/.
+    Used to list diagrams via:
+    - `GET api/v1/diagrams/shared-with-me/`.
     Diagram object is annotated with its permission level in get_queryset()
     method of SharedWithMeDiagramViewSet.
     """
@@ -124,3 +128,40 @@ class SharedDiagramListSerializer(DiagramListSerializer):
     class Meta:
         model = Diagram
         fields = DiagramListSerializer.Meta.fields + ["permission_level"]
+
+
+# region @extend_schema_serializer
+@extend_schema_serializer(
+    examples=[
+        OpenApiExample(
+            name="JSON body example",
+            description="User can set the following fields in the request body:\n"
+            "- `description`;\n"
+            "- `json`.\n\n"
+            "The `title` field is **read-only**. It will remained unchanged.",
+            value={"description": "string", "json": "string"},
+            request_only=True,
+        ),
+    ]
+)
+# endregion
+class SharedDiagramSaveSerializer(serializers.ModelSerializer):
+    """
+    Used to save updated shared diagrams by the users who it were shared to
+    if they have appropriate permission via:
+    - `POST api/v1/diagrams/shared-with-me/{uuid}/save/`.
+    """
+
+    diagram_id = serializers.ReadOnlyField(source="id")
+    title = serializers.ReadOnlyField()
+    json = serializers.JSONField(write_only=True)
+
+    class Meta:
+        model = Diagram
+        fields = [
+            "diagram_id",
+            "title",
+            "json",
+            "description",
+            "updated_at",
+        ]

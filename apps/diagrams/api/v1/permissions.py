@@ -3,7 +3,7 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 
-class IsAdminOrIsOwner(permissions.BasePermission):
+class IsAdminOrIsDiagramOwner(permissions.BasePermission):
     """
     Custom permission which allows:
     - admins to do anything with any diagram;

@@ -102,3 +102,19 @@ def test_shared_diagram_copy_shared_diagram_resolve() -> None:
     )
     assert resolver_match.func.cls == SharedWithMeDiagramViewSet
     assert resolver_match.view_name == "shared-diagram-copy-shared-diagram"
+
+
+def test_shared_diagram_save_shared_diagram_resolve() -> None:
+    """
+    GIVEN a URL pattern name
+    WHEN the `resolve()` function is called with the URL associated with the pattern
+    THEN:
+        - the appropriate view is returned;
+        - resolver points to the view with the correct URL pattern name.
+    """
+    uuid_pk = uuid.uuid4()
+    resolver_match = resolve(
+        reverse("shared-diagram-save-shared-diagram", args=[uuid_pk])
+    )
+    assert resolver_match.func.cls == SharedWithMeDiagramViewSet
+    assert resolver_match.view_name == "shared-diagram-save-shared-diagram"

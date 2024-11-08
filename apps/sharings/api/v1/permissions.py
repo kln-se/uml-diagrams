@@ -3,10 +3,11 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from apps.diagrams.models import Diagram
+from apps.sharings.constants import PermissionLevels
 from apps.sharings.models import Collaborator
 
 
-class IsAdminOrIsOwner(permissions.BasePermission):
+class IsAdminOrIsSharingOwner(permissions.BasePermission):
     """
     Custom permission which allows:
     - admins to do anything with any share invitation (collaborator obj.;
@@ -45,5 +46,24 @@ class IsCollaboratorAndHasViewCopyPermission(permissions.BasePermission):
         self, request: Request, view: APIView, obj: Diagram
     ) -> bool:
         return Collaborator.objects.filter(
-            diagram=obj, shared_to=request.user, permission_level="view-copy"
+            diagram=obj,
+            shared_to=request.user,
+            permission_level=PermissionLevels.VIEWCOPY,
+        ).exists()
+
+
+class IsCollaboratorAndHasViewEditPermission(permissions.BasePermission):
+    """
+    Custom permission which allows collaborator to edit shared diagram
+    and save changes to it if he has the appropriate permission.
+    Permission "view-edit" is required in database.
+    """
+
+    def has_object_permission(
+        self, request: Request, view: APIView, obj: Diagram
+    ) -> bool:
+        return Collaborator.objects.filter(
+            diagram=obj,
+            shared_to=request.user,
+            permission_level=PermissionLevels.VIEWEDIT,
         ).exists()

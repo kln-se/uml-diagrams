@@ -6,14 +6,15 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
-from apps.diagrams.api.v1.actions import copy_diagram
+from apps.diagrams.api.v1.actions import copy_diagram, save_diagram
 from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
-from apps.diagrams.api.v1.permissions import IsAdminOrIsOwner
+from apps.diagrams.api.v1.permissions import IsAdminOrIsDiagramOwner
 from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
     DiagramListSerializer,
     DiagramSerializer,
     SharedDiagramListSerializer,
+    SharedDiagramSaveSerializer,
 )
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
@@ -21,6 +22,7 @@ from apps.sharings.api.v1.actions import invite_collaborator, remove_all_collabo
 from apps.sharings.api.v1.permissions import (
     IsCollaborator,
     IsCollaboratorAndHasViewCopyPermission,
+    IsCollaboratorAndHasViewEditPermission,
 )
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from apps.sharings.models import Collaborator
@@ -163,7 +165,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
 
     queryset: QuerySet[Diagram] = Diagram.objects.all()
     serializer_class = DiagramSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrIsOwner]
+    permission_classes = [IsAuthenticated, IsAdminOrIsDiagramOwner]
     pagination_class = DiagramViewSetPagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["title", "owner_email", "created_at", "updated_at"]
@@ -261,15 +263,39 @@ class DiagramViewSet(viewsets.ModelViewSet):
     copy_shared_diagram=extend_schema(
         tags=[DiagramsConfig.tag],
         summary="Copy a diagram shared to the current user",
-        description="Allows to copy a specific diagram shared to the current user, "
-        "if its owner shared it to him with **view-copy** "
-        "(View & Copy) permission.",
+        description="Allows to copy a specific diagram shared to the current "
+        "user to the user's account, if its owner shared it to him with "
+        "**view-copy** (View & Copy) or **view-edit** (View & Edit) permission.",
         parameters=[required_header_auth_parameter],
         responses={
             201: DiagramCopySerializer,
-            400: OpenApiResponse(description="JSON parse error"),
+            400: OpenApiResponse(
+                description="Possible errors:\n" "- JSON parse error."
+            ),
             401: OpenApiResponse(description="Invalid token or token not provided"),
-            403: OpenApiResponse(description="Insufficient permission to copy"),
+            403: OpenApiResponse(
+                description="Insufficient permission to copy diagram to user's account"
+            ),
+            404: OpenApiResponse(description="Shared diagram not found"),
+        },
+    ),
+    save_shared_diagram=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Save changes made to the shared diagram",
+        description="Allows to save changes made to a specific "
+        "diagram shared to the current user, "
+        "if its owner shared it to him with **view-edit** "
+        "(View & Edit) permission.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: SharedDiagramSaveSerializer,
+            400: OpenApiResponse(
+                description="Possible errors:\n" "- JSON parse error."
+            ),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            403: OpenApiResponse(
+                description="Insufficient permission to save made changes"
+            ),
             404: OpenApiResponse(description="Shared diagram not found"),
         },
     ),
@@ -287,7 +313,7 @@ class SharedWithMeDiagramViewSet(
     queryset: QuerySet[Diagram] = Diagram.objects.all()
     serializer_class = DiagramSerializer
     permission_classes = [IsAuthenticated, IsCollaborator]
-    http_method_names = ["get", "post"]
+    http_method_names = ["get", "post", "patch"]
     pagination_class = DiagramViewSetPagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["title", "owner_email", "created_at", "updated_at"]
@@ -315,6 +341,7 @@ class SharedWithMeDiagramViewSet(
             "list": SharedDiagramListSerializer,
             "retrieve": DiagramSerializer,
             "copy_shared_diagram": DiagramCopySerializer,
+            "save_shared_diagram": SharedDiagramSaveSerializer,
         }
         return serializer_mapping.get(self.action, super().get_serializer_class())
 
@@ -322,7 +349,12 @@ class SharedWithMeDiagramViewSet(
         permission_mapping = {
             "copy_shared_diagram": [
                 IsAuthenticated,
-                IsCollaboratorAndHasViewCopyPermission,
+                IsCollaboratorAndHasViewCopyPermission
+                | IsCollaboratorAndHasViewEditPermission,
+            ],
+            "save_shared_diagram": [
+                IsAuthenticated,
+                IsCollaboratorAndHasViewEditPermission,
             ],
         }
         return [
@@ -340,3 +372,12 @@ class SharedWithMeDiagramViewSet(
         Requires `IsCollaboratorAndHasViewCopyPermission` permission.
         """
         return copy_diagram(self, *args, **kwargs)
+
+    @action(detail=True, methods=["patch"], url_path="save")
+    def save_shared_diagram(self, *args, **kwargs):
+        """
+        Allows invited collaborator to edit and save changes to the diagram
+        he was shared to if he has appropriate permission.
+        Requires `IsCollaboratorAndHasViewEditPermission` permission.
+        """
+        return save_diagram(self, *args, **kwargs)
