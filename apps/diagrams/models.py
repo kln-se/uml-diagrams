@@ -33,4 +33,4 @@ class Diagram(models.Model):
         verbose_name_plural = "Diagrams"
 
     def __str__(self):
-        return f"id: {self.id} | {self.owner}"
+        return f"id: {self.id} | {self.owner} | {self.title}"

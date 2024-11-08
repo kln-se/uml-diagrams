@@ -185,7 +185,7 @@ SPECTACULAR_SETTINGS = {
             - retrieve diagrams shared to them.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.15.0-dev",
+    "VERSION": "1.15.1-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

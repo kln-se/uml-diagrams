@@ -11,6 +11,7 @@ class CollaboratorAdmin(admin.ModelAdmin):
         "permission_level",
         "shared_at",
     )
+    search_fields = ["diagram__title", "shared_to__email"]
 
     fields = ("diagram", "shared_to", "permission_level")
 
