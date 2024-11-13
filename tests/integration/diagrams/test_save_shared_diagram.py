@@ -22,7 +22,7 @@ class TestSaveSharedDiagram:
         """
         GIVEN a logged-in user who was shared a diagram to (i.e. collaborator) with
         appropriate permission "view-edit"
-        WHEN he requests GET /api/v1/diagrams/shared-with-me/{diagram_id}/save/
+        WHEN he requests PATCH /api/v1/diagrams/shared-with-me/{diagram_id}/save/
         THEN check that changes made to the diagram were applied and
         200 OK is returned.
         """
@@ -74,7 +74,7 @@ class TestSaveSharedDiagram:
         """
         GIVEN a logged-in user who was shared a diagram to (i.e. collaborator) with
         not appropriate permission "view-only"
-        WHEN he requests GET /api/v1/diagrams/shared-with-me/{diagram_id}/save/
+        WHEN he requests PATCH /api/v1/diagrams/shared-with-me/{diagram_id}/save/
         THEN check that the diagram remains unchanged and
         403 FORBIDDEN is returned.
         """
@@ -109,7 +109,7 @@ class TestSaveSharedDiagram:
         """
         GIVEN a logged-in user who was not shared a diagram to.
         But he tried to made changes to it.
-        WHEN he requests GET /api/v1/diagrams/shared-with-me/{diagram_id}/save/
+        WHEN he requests PATCH /api/v1/diagrams/shared-with-me/{diagram_id}/save/
         THEN check that the diagram is remained unchanged and
         404 NOT FOUND is returned.
         """

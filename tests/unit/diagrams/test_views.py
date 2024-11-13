@@ -285,6 +285,7 @@ class TestSharedWithMeDiagramViewSet:
             ("retrieve", DiagramSerializer),
             ("copy_shared_diagram", DiagramCopySerializer),
             ("save_shared_diagram", SharedDiagramSaveSerializer),
+            ("unshare_me_from_diagram", None),
         ],
     )
     def test_get_serializer_class_correct(
@@ -316,6 +317,7 @@ class TestSharedWithMeDiagramViewSet:
                 "save_shared_diagram",
                 [IsAuthenticated, IsCollaboratorAndHasViewEditPermission],
             ),
+            ("unshare_me_from_diagram", [IsAuthenticated, IsCollaborator]),
         ],
     )
     def test_get_permissions(
@@ -355,4 +357,4 @@ class TestSharedWithMeDiagramViewSet:
 
     def test_shared_with_me_diagram_viewset_http_methods_correct(self) -> None:
         viewset = SharedWithMeDiagramViewSet()
-        assert viewset.http_method_names == ["get", "post", "patch"]
+        assert viewset.http_method_names == ["get", "post", "patch", "delete"]

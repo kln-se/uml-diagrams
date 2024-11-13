@@ -180,12 +180,12 @@ SPECTACULAR_SETTINGS = {
             - retrieve shared diagrams;
             - copy shared diagrams if permission is granted;
             - edit shared diagrams if permission is granted;
+            - unshare itself from a shared diagram;
             - remove all collaborators from their diagram in a single request;
-            - retrieve, update, delete created sharing invitations;
-            - retrieve diagrams shared to them.
+            - retrieve, update, delete created sharing invitations.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.15.2-dev",
+    "VERSION": "1.16.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

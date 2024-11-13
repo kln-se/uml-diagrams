@@ -1,10 +1,12 @@
 import pytest
+from django.http import Http404
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from apps.diagrams.api.v1.views import DiagramViewSet, SharedWithMeDiagramViewSet
 from apps.diagrams.models import Diagram
 from apps.sharings.constants import PermissionLevels
+from apps.sharings.models import Collaborator
 from apps.users.constants import UserRoles
 from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
 
@@ -184,3 +186,78 @@ class TestActionSaveSharedDiagram:
         response = viewset(request, pk=original_diagram.id)
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert Diagram.objects.get(id=original_diagram.id).json != data_to_set["json"]
+
+
+class TestActionUnshareMeFromSharedDiagram:
+    """Test @action unshare_me_from_diagram() inside SharedWithMeDiagramViewSet."""
+
+    def test_unshare_me_from_diagram_by_collaborator(self):
+        """
+        GIVEN the diagram which is shared to user (i.e. collaborator).
+        WHEN action unshare_me_from_diagram() inside SharedWithMeDiagramViewSet
+        is called
+        THEN check that the collaborator is deleted.
+        """
+        original_diagram = DiagramFactory()
+        collaborator = CollaboratorFactory(diagram=original_diagram)
+        request = APIRequestFactory()
+        request.user = collaborator.shared_to
+        request.query_params = {}
+        viewset = SharedWithMeDiagramViewSet(
+            request=request,
+            kwargs={"pk": original_diagram.id},
+            format_kwarg=None,
+            action="unshare_me_from_diagram",
+        )
+        assert viewset.get_object() == original_diagram
+        response = viewset.unshare_me_from_diagram(request=request)
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert Diagram.objects.filter(id=original_diagram.id).exists()
+        assert not Collaborator.objects.filter(
+            diagram=original_diagram, shared_to=collaborator.id
+        ).exists()
+
+    def test_unshare_me_from_diagram_by_not_collaborator(self):
+        """
+        GIVEN the diagram which was not shared to user.
+        WHEN action unshare_me_from_diagram() inside SharedWithMeDiagramViewSet
+        is called
+        THEN check that diagram is not found (404).
+        """
+        original_diagram = DiagramFactory()
+        some_collaborator = CollaboratorFactory(diagram=original_diagram)
+        not_collaborator = UserFactory()
+        request = APIRequestFactory()
+        request.user = not_collaborator
+        request.query_params = {}
+        viewset = SharedWithMeDiagramViewSet(
+            request=request,
+            kwargs={"pk": original_diagram.id},
+            format_kwarg=None,
+            action="unshare_me_from_diagram",
+        )
+        with pytest.raises(Http404):
+            _ = viewset.unshare_me_from_diagram(request=request)
+        assert Diagram.objects.filter(id=original_diagram.id).exists()
+        assert Collaborator.objects.filter(id=some_collaborator.id).exists()
+
+    def test_unshare_me_from_diagram_for_invalid_diagram_id(self):
+        """
+        GIVEN the user who tries to unshare himself from
+        not existent diagram (invalid id).
+        WHEN action unshare_me_from_diagram() inside SharedWithMeDiagramViewSet
+        is called
+        THEN check that diagram is not found (404).
+        """
+        not_existent_diagram = DiagramFactory.build()
+        request = APIRequestFactory()
+        request.user = UserFactory()
+        request.query_params = {}
+        viewset = SharedWithMeDiagramViewSet(
+            request=request,
+            kwargs={"pk": not_existent_diagram.id},
+            format_kwarg=None,
+            action="unshare_me_from_diagram",
+        )
+        with pytest.raises(Http404):
+            _ = viewset.unshare_me_from_diagram(request=request)

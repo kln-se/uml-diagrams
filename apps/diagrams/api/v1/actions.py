@@ -4,6 +4,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from apps.sharings.models import Collaborator
+
 
 def copy_diagram(self: GenericViewSet, request: Request, **_kwargs) -> Response:
     """
@@ -39,3 +41,14 @@ def save_diagram(self: GenericViewSet, request: Request, **_kwargs) -> Response:
         instance._prefetched_objects_cache = {}
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+def unshare_me(self: GenericViewSet, request: Request, **_kwargs) -> Response:
+    """
+    API endpoint that allows user to unsubscribe himself from a diagram
+    if the diagram was shared to him.
+    Unsubscribed user will be removed from diagram collaborators.
+    """
+    diagram = self.get_object()
+    Collaborator.objects.filter(diagram=diagram, shared_to=request.user).delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)

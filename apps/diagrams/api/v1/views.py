@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
-from apps.diagrams.api.v1.actions import copy_diagram, save_diagram
+from apps.diagrams.api.v1.actions import copy_diagram, save_diagram, unshare_me
 from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
 from apps.diagrams.api.v1.permissions import IsAdminOrIsDiagramOwner
 from apps.diagrams.api.v1.serializers import (
@@ -150,7 +150,7 @@ from docs.api.templates.parameters import required_header_auth_parameter
         responses={
             204: OpenApiResponse(description="Removed successfully"),
             401: OpenApiResponse(description="Invalid token or token not provided"),
-            404: OpenApiResponse(description="Diagram not found."),
+            404: OpenApiResponse(description="Diagram not found"),
         },
     ),
 )
@@ -299,6 +299,19 @@ class DiagramViewSet(viewsets.ModelViewSet):
             404: OpenApiResponse(description="Shared diagram not found"),
         },
     ),
+    unshare_me_from_diagram=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Unsubscribe user from a shared diagram",
+        description="Allows logged-in user to unsubscribe himself from "
+        "the diagram if it was shared to him. "
+        "Unsubscribed user will be removed from diagram collaborators list.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            204: OpenApiResponse(description="Removed successfully"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
+    ),
 )
 # endregion
 class SharedWithMeDiagramViewSet(
@@ -313,7 +326,7 @@ class SharedWithMeDiagramViewSet(
     queryset: QuerySet[Diagram] = Diagram.objects.all()
     serializer_class = DiagramSerializer
     permission_classes = [IsAuthenticated, IsCollaborator]
-    http_method_names = ["get", "post", "patch"]
+    http_method_names = ["get", "post", "patch", "delete"]
     pagination_class = DiagramViewSetPagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["title", "owner_email", "created_at", "updated_at"]
@@ -342,6 +355,7 @@ class SharedWithMeDiagramViewSet(
             "retrieve": DiagramSerializer,
             "copy_shared_diagram": DiagramCopySerializer,
             "save_shared_diagram": SharedDiagramSaveSerializer,
+            "unshare_me_from_diagram": None,
         }
         return serializer_mapping.get(self.action, super().get_serializer_class())
 
@@ -356,6 +370,7 @@ class SharedWithMeDiagramViewSet(
                 IsAuthenticated,
                 IsCollaboratorAndHasViewEditPermission,
             ],
+            "unshare_me_from_diagram": [IsAuthenticated, IsCollaborator],
         }
         return [
             permission()
@@ -381,3 +396,12 @@ class SharedWithMeDiagramViewSet(
         Requires `IsCollaboratorAndHasViewEditPermission` permission.
         """
         return save_diagram(self, *args, **kwargs)
+
+    @action(detail=True, methods=["delete"], url_path="unshare-me")
+    def unshare_me_from_diagram(self, *args, **kwargs):
+        """
+        Allows user to unsubscribe himself from a shared diagram.
+        Unsubscribed user will be removed from diagram collaborators.
+        Requires `IsCollaborator` permission.
+        """
+        return unshare_me(self, *args, **kwargs)
