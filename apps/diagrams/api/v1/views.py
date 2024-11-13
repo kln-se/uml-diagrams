@@ -227,7 +227,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
         """
         return invite_collaborator(self, *args, **kwargs)
 
-    @action(detail=True, methods=["post"], url_path="share-unshare-all")
+    @action(detail=True, methods=["delete"], url_path="share-unshare-all")
     def remove_all_collaborators(self, *args, **kwargs):
         """
         Allows owner to remove all collaborators from his diagram.
