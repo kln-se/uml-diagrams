@@ -21,7 +21,7 @@ Example usage in PowerShell to run container being in the project root directory
 # Vars
 $API_IMAGE_NAME = "uml-diagrams-api"
 $API_CONTAINER_NAME = "uml-diagrams-api"
-$API_VERSION = "1.15.1-dev"
+$API_VERSION = "1.15.2-dev"
 # For incoming connections
 $GATEWAY_EXT_PORT = 8081
 

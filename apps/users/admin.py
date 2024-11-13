@@ -25,9 +25,12 @@ class CustomUserAdmin(admin.ModelAdmin):
             - creating new user;
             - changing existing user's password.
         """
-        old_password = User.objects.get(id=obj.id).password
         new_password = form.cleaned_data["password"]
-        if not change or new_password != old_password:
+        if change:
+            old_password = User.objects.get(id=obj.id).password
+            if new_password != old_password:
+                obj.set_password(new_password)
+        else:
             obj.set_password(new_password)
         super().save_model(request, obj, form, change)
 
