@@ -21,7 +21,7 @@ Example usage in PowerShell to run container being in the project root directory
 # Vars
 $API_IMAGE_NAME = "uml-diagrams-api"
 $API_CONTAINER_NAME = "uml-diagrams-api"
-$API_VERSION = "1.17.1-dev"
+$API_VERSION = "1.17.2-dev"
 # For incoming connections
 $GATEWAY_EXT_PORT = 8081
 
@@ -56,9 +56,14 @@ function docker-kill-postgres {
     docker kill uml-diagrams-postgres
 }
 function docker-remove-postgres {
-    docker rm uml-diagrams-postgres;
-    echo "WARN: postgres data volume 'uml_diagrams_pg_db_data' should be removed manually (e.g. `docker volume rm uml_diagrams_pg_db_data`).";
-    echo "WARN: docker network 'uml_diagrams_net' should be removed manually (e.g. `docker network rm uml_diagrams_net`)."
+    $confirmation = Read-Host "WARN: should the resources (volume and network) associated with the container also be deleted? Proceed [y/n]?"
+    if ($confirmation -eq 'y') {
+        docker rm uml-diagrams-postgres;
+        docker volume rm uml_diagrams_pg_db_data;
+        docker network rm uml_diagrams_net;
+    } else {
+        docker rm uml-diagrams-postgres;
+    }
 }
 function docker-shell-postgres {
     docker exec -it uml-diagrams-postgres bash
@@ -96,9 +101,15 @@ function docker-kill-api {
     docker kill ${API_CONTAINER_NAME}
 }
 function docker-remove-api {
-    docker rm ${API_CONTAINER_NAME};
-    echo "WARN: app static files volume 'uml_diagrams_static' should be removed manually (e.g. `docker volume rm uml_diagrams_static`).";
-    echo "WARN: docker network 'uml_diagrams_net' should be removed manually (e.g. `docker network rm uml_diagrams_net`)."
+    $confirmation = Read-Host "WARN: should the resources (volume and network) associated with the container also be deleted? Proceed [y/n]?"
+    if ($confirmation -eq 'y') {
+        docker rm ${API_CONTAINER_NAME};
+        docker volume rm uml_diagrams_static;
+        docker network rm uml_diagrams_net;
+    } else {
+        docker rm ${API_CONTAINER_NAME};
+    }
+
 }
 function docker-shell-api {
     docker exec -it ${API_CONTAINER_NAME} bash
@@ -193,7 +204,14 @@ switch ($target) {
         docker-build-postgres
     }
     "docker-run-postgres" {
-        docker-run-postgres
+        docker-create-net;
+        docker-run-postgres;
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "INFO: waiting 10 seconds for the database to start...";
+            Start-Sleep -Seconds 10;
+            Write-Host "INFO: applying database migrations...";
+            python manage.py migrate --settings=config.settings;
+        }
     }
     "docker-restart-postgres" {
         docker-restart-postgres
@@ -205,6 +223,7 @@ switch ($target) {
         docker-kill-postgres
     }
     "docker-remove-postgres" {
+        docker-stop-postgres;
         docker-remove-postgres
     }
     "docker-shell-postgres" {
@@ -230,6 +249,7 @@ switch ($target) {
         docker-kill-api
     }
     "docker-remove-api" {
+        docker-stop-api;
         docker-remove-api
     }
     "docker-shell-api" {
@@ -258,6 +278,7 @@ switch ($target) {
         docker-kill-nginx
     }
     "docker-remove-nginx" {
+        docker-stop-nginx;
         docker-remove-nginx
     }
     "docker-shell-nginx" {

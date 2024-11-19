@@ -44,5 +44,5 @@ docker-psql-postgres:
 docker-shell-api:
 	sudo docker exec -it $$API_CONTAINER_NAME bash
 
-docker-load-api:
+docker-download-api:
 	sudo docker load -i $$API_IMAGE_NAME.tar
