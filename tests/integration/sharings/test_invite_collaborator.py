@@ -1,3 +1,4 @@
+import pytest
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -87,6 +88,41 @@ class TestInviteCollaboratorToDiagram:
         response = client.post(path=url, data=invitation_data)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["user_email"][0].code == "does_not_exist"
+        assert not Collaborator.objects.first()
+
+    @pytest.mark.parametrize(
+        ("invitation_data", "code"),
+        [
+            (
+                {
+                    "user_email": "",
+                    "permission_level": CollaboratorFactory.build().permission_level,
+                },
+                "null",
+            ),
+            (
+                {"permission_level": CollaboratorFactory.build().permission_level},
+                "required",
+            ),
+        ],
+    )
+    def test_invite_collaborator_to_diagram_user_email_field_is_empty(
+        self, client: APIClient, logged_in_user: User, invitation_data, code: str
+    ) -> None:
+        """
+        GIVEN a logged-in user who owns a diagram and trying to share with \
+        empty user_email field
+        WHEN he requests POST /api/v1/diagrams/{diagram_id}/share-invite-user/
+        THEN check that 400 BAD REQUEST is returned
+        """
+        diagram = DiagramFactory(owner=logged_in_user)
+        url = f"{reverse(
+            DIAGRAM_SHARE_INVITE_USER_URL_NAME,
+            kwargs={'pk': diagram.pk}
+        )}"
+        response = client.post(path=url, data=invitation_data)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data["user_email"][0].code == code
         assert not Collaborator.objects.first()
 
     def test_invite_collaborator_to_diagram_user_permission_level_is_invalid(

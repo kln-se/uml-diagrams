@@ -67,3 +67,18 @@ class IsCollaboratorAndHasViewEditPermission(permissions.BasePermission):
             shared_to=request.user,
             permission_level=PermissionLevels.VIEWEDIT,
         ).exists()
+
+
+class IsPublicDiagram(permissions.BasePermission):
+    """
+    Custom permission which allows any user to access the diagram
+    if it was shared publicly.
+    """
+
+    def has_object_permission(
+        self, request: Request, view: APIView, obj: Diagram
+    ) -> bool:
+        return Collaborator.objects.filter(
+            diagram=obj,
+            shared_to=None,
+        ).exists()

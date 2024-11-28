@@ -8,7 +8,7 @@ router.register(
     r"shared-with-me", views.SharedWithMeDiagramViewSet, basename="shared-diagram"
 )
 router.register(r"", views.DiagramViewSet)
-
+router.register(r"public", views.PublicDiagramViewSet, basename="public-diagram")
 
 urlpatterns = [
     path("", include(router.urls)),

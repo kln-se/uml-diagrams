@@ -3,7 +3,7 @@ from typing import List
 import pytest
 from django.http.response import Http404
 from rest_framework import filters
-from rest_framework.permissions import OR, IsAuthenticated
+from rest_framework.permissions import OR, AllowAny, IsAuthenticated
 from rest_framework.serializers import ModelSerializer
 from rest_framework.test import APIRequestFactory
 
@@ -16,11 +16,16 @@ from apps.diagrams.api.v1.serializers import (
     SharedDiagramListSerializer,
     SharedDiagramSaveSerializer,
 )
-from apps.diagrams.api.v1.views import DiagramViewSet, SharedWithMeDiagramViewSet
+from apps.diagrams.api.v1.views import (
+    DiagramViewSet,
+    PublicDiagramViewSet,
+    SharedWithMeDiagramViewSet,
+)
 from apps.sharings.api.v1.permissions import (
     IsCollaborator,
     IsCollaboratorAndHasViewCopyPermission,
     IsCollaboratorAndHasViewEditPermission,
+    IsPublicDiagram,
 )
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from apps.users.constants import UserRoles
@@ -358,3 +363,10 @@ class TestSharedWithMeDiagramViewSet:
     def test_shared_with_me_diagram_viewset_http_methods_correct(self) -> None:
         viewset = SharedWithMeDiagramViewSet()
         assert viewset.http_method_names == ["get", "post", "patch", "delete"]
+
+
+class TestPublicDiagramViewSet:
+    def test_public_diagram_viewset_basic_settings_correct(self) -> None:
+        viewset = PublicDiagramViewSet()
+        assert viewset.serializer_class == DiagramSerializer
+        assert viewset.permission_classes == [AllowAny, IsPublicDiagram]

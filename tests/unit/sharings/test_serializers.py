@@ -134,11 +134,11 @@ class TestInviteCollaboratorSerializer:
 
 
 class TestCollaboratorSerializer:
-    def test_collaborator_serializer_returned_data(
+    def test_collaborator_serializer_returned_data_for_shared_diagram(
         self, collaborator: Collaborator
     ) -> None:
         """
-        GIVEN a random collaborator object
+        GIVEN a collaborator object where diagram was shared to another user
         WHEN serializer is called
         THEN check if serialized data is coincident with the collaborator's data.
         """
@@ -148,6 +148,25 @@ class TestCollaboratorSerializer:
             "diagram_id": collaborator.diagram.id,
             "diagram_title": collaborator.diagram.title,
             "shared_to": collaborator.shared_to.email,
+            "permission_level": collaborator.permission_level,
+            "shared_at": collaborator.shared_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        }
+
+    def test_collaborator_serializer_returned_data_for_public_diagram(
+        self, collaborator: Collaborator
+    ) -> None:
+        """
+        GIVEN a collaborator object where diagram was shared publicly
+        WHEN serializer is called
+        THEN check if serialized data is coincident with the collaborator's data.
+        """
+        collaborator.shared_to = None
+        serializer = CollaboratorSerializer(instance=collaborator)
+        assert serializer.data == {
+            "collaborator_id": collaborator.id,
+            "diagram_id": collaborator.diagram.id,
+            "diagram_title": collaborator.diagram.title,
+            "shared_to": None,
             "permission_level": collaborator.permission_level,
             "shared_at": collaborator.shared_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }

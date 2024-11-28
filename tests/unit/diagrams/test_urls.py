@@ -2,7 +2,11 @@ import uuid
 
 from django.urls import resolve, reverse
 
-from apps.diagrams.api.v1.views import DiagramViewSet, SharedWithMeDiagramViewSet
+from apps.diagrams.api.v1.views import (
+    DiagramViewSet,
+    PublicDiagramViewSet,
+    SharedWithMeDiagramViewSet,
+)
 
 
 def test_diagram_list_resolve() -> None:
@@ -26,7 +30,8 @@ def test_diagram_detail_resolve() -> None:
         - the appropriate view is returned;
         - resolver points to the view with the correct URL pattern name.
     """
-    resolver_match = resolve(reverse("diagram-detail", args=[1]))
+    uuid_pk = uuid.uuid4()
+    resolver_match = resolve(reverse("diagram-detail", args=[uuid_pk]))
     assert resolver_match.func.cls == DiagramViewSet
     assert resolver_match.view_name == "diagram-detail"
 
@@ -88,6 +93,20 @@ def test_shared_diagram_list_resolve() -> None:
     assert resolver_match.view_name == "shared-diagram-list"
 
 
+def test_shared_diagram_detail_resolve() -> None:
+    """
+    GIVEN a URL pattern name
+    WHEN the `resolve()` function is called with the URL associated with the pattern
+    THEN:
+        - the appropriate view is returned;
+        - resolver points to the view with the correct URL pattern name.
+    """
+    uuid_pk = uuid.uuid4()
+    resolver_match = resolve(reverse("shared-diagram-detail", args=[uuid_pk]))
+    assert resolver_match.func.cls == SharedWithMeDiagramViewSet
+    assert resolver_match.view_name == "shared-diagram-detail"
+
+
 def test_shared_diagram_copy_shared_diagram_resolve() -> None:
     """
     GIVEN a URL pattern name
@@ -134,3 +153,17 @@ def test_shared_diagram_unshare_me_from_diagram_resolve() -> None:
     )
     assert resolver_match.func.cls == SharedWithMeDiagramViewSet
     assert resolver_match.view_name == "shared-diagram-unshare-me-from-diagram"
+
+
+def test_public_diagram_detail_resolve() -> None:
+    """
+    GIVEN a URL pattern name
+    WHEN the `resolve()` function is called with the URL associated with the pattern
+    THEN:
+        - the appropriate view is returned;
+        - resolver points to the view with the correct URL pattern name.
+    """
+    uuid_pk = uuid.uuid4()
+    resolver_match = resolve(reverse("public-diagram-detail", args=[uuid_pk]))
+    assert resolver_match.func.cls == PublicDiagramViewSet
+    assert resolver_match.view_name == "public-diagram-detail"

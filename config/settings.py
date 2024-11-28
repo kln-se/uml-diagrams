@@ -168,24 +168,24 @@ SPECTACULAR_SETTINGS = {
 
     The API supports:
         1. Store, retrieve, update and delete created UML diagrams;
-        2. Retrieve all stored UML diagrams;
-        3. Create copy of a stored UML diagram;
-        4. Share UML diagrams with other users (in progress).
+        2. Share UML diagrams to other users or make them public;
+        3. Create a copy or make changes to a shared UML diagram if appropriate
+           permission was granted.
 
     Basic permission rules:
         1. Users can do the following operations with their own UML diagrams:
             - create, retrieve, update, delete (CRUD) their diagram;
             - copy own diagrams;
-            - share diagrams to other users.
+            - share diagrams to other users or make them public.
             - retrieve shared diagrams;
             - copy shared diagrams if permission is granted;
             - edit shared diagrams if permission is granted;
             - unshare itself from a shared diagram;
             - remove all collaborators from their diagram in a single request;
-            - retrieve, update, delete created sharing invitations.
+            - create, retrieve, update or delete sharing invitations.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.17.2-dev",
+    "VERSION": "1.18.0-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

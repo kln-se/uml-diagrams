@@ -1,3 +1,7 @@
+from typing import Union
+
+import pytest
+from django.contrib.auth.models import AnonymousUser
 from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 
@@ -6,9 +10,11 @@ from apps.sharings.api.v1.permissions import (
     IsCollaborator,
     IsCollaboratorAndHasViewCopyPermission,
     IsCollaboratorAndHasViewEditPermission,
+    IsPublicDiagram,
 )
 from apps.sharings.constants import PermissionLevels
 from apps.users.constants import UserRoles
+from apps.users.models import User
 from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
 
 
@@ -198,3 +204,54 @@ class TestIsCollaboratorAndHasViewEditPermission:
         request.user = not_collaborator
         diagram = DiagramFactory()
         assert not permission.has_object_permission(request, APIView(), diagram)
+
+
+class TestIsPublicDiagramPermission:
+    @pytest.mark.parametrize(
+        "user",
+        [
+            AnonymousUser,
+            UserFactory,
+        ],
+    )
+    def test_is_public_diagram_permission_for_any_user_type_is_granted(
+        self, user: Union[AnonymousUser, User]
+    ) -> None:
+        """
+        GIVEN a user who tries to get access to the public diagram
+        WHEN is checked that the diagram meets the public sharing requirements
+        THEN the permission is granted.
+        """
+        permission = IsPublicDiagram()
+        request = APIRequestFactory().get("/")
+        public_diagram_sharing = CollaboratorFactory(
+            shared_to=None,
+            permission_level=PermissionLevels.VIEWONLY,
+        )
+        request.user = user()
+        assert permission.has_object_permission(
+            request, APIView(), public_diagram_sharing.diagram
+        )
+
+    @pytest.mark.parametrize(
+        "user",
+        [
+            AnonymousUser,
+            UserFactory,
+        ],
+    )
+    def test_is_public_diagram_permission_for_not_public_diagram_is_not_granted(
+        self, user: Union[AnonymousUser, User]
+    ) -> None:
+        """
+        GIVEN a user who tries to get access to the not public diagram
+        WHEN is checked if the diagram meets the requirements
+        THEN the permission is not granted to access the diagram.
+        """
+        permission = IsPublicDiagram()
+        request = APIRequestFactory().get("/")
+        personal_sharing = CollaboratorFactory()
+        request.user = user()
+        assert not permission.has_object_permission(
+            request, APIView(), personal_sharing.diagram
+        )

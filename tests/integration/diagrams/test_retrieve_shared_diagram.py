@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -51,7 +53,7 @@ def test_retrieve_shared_diagram_try_to_access_diagram_shared_to_another_user(
 
 @pytest.mark.parametrize(
     "invalid_diagram_id",
-    ["invalid_diagram_id", 123],
+    ["invalid_diagram_id", uuid.uuid4()],
 )
 def test_retrieve_shared_diagram_invalid_diagram_id(
     client: APIClient, logged_in_user: User, invalid_diagram_id

@@ -3,7 +3,7 @@ from django.db.models import OuterRef, QuerySet, Subquery
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
 from apps.diagrams.api.v1.actions import copy_diagram, save_diagram, unshare_me
@@ -23,6 +23,7 @@ from apps.sharings.api.v1.permissions import (
     IsCollaborator,
     IsCollaboratorAndHasViewCopyPermission,
     IsCollaboratorAndHasViewEditPermission,
+    IsPublicDiagram,
 )
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
 from apps.sharings.models import Collaborator
@@ -405,3 +406,32 @@ class SharedWithMeDiagramViewSet(
         Requires `IsCollaborator` permission.
         """
         return unshare_me(self, *args, **kwargs)
+
+
+# region @extend_schema
+@extend_schema_view(
+    retrieve=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Retrieve a diagram shared publicly",
+        description="Returns the details of a specific diagram that was shared "
+        "publicly by another user.\n\n"
+        "Public diagrams are stored in the database with "
+        "**shared_to** field set to `null`.",
+        parameters=[required_header_auth_parameter],
+        responses={
+            200: DiagramSerializer,
+            404: OpenApiResponse(description="Public diagram not found"),
+        },
+    ),
+)
+# endregion
+class PublicDiagramViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+    """
+    API endpoint that allows to view a diagram that was shared publicly.
+    If a diagram was shared and 'shared_to' field is set to 'shared_to=null',
+    in the database, so it will be public.
+    """
+
+    queryset: QuerySet[Diagram] = Diagram.objects.all()
+    serializer_class = DiagramSerializer
+    permission_classes = [AllowAny, IsPublicDiagram]

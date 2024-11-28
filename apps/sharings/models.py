@@ -3,6 +3,7 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 
 from apps.diagrams.models import Diagram
 from apps.sharings.constants import PermissionLevels
@@ -19,6 +20,8 @@ class Collaborator(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Shared to",
         help_text="User whom diagram is shared to.",
+        null=True,
+        blank=True,
     )
     diagram = models.ForeignKey(
         Diagram,
@@ -40,11 +43,24 @@ class Collaborator(models.Model):
 
     class Meta:
         unique_together = ("shared_to", "diagram")
+        constraints = [
+            # Prevents sharing diagram as public with other than "view-only" permission.
+            # This is reinsurance during diagram sharing via admin panel.
+            models.CheckConstraint(
+                check=Q(shared_to__isnull=True, permission_level="view-only")
+                | Q(shared_to__isnull=False),
+                name="shared_to_is_null_when_permission_level_is_not_view_only",
+                violation_error_message="The 'shared_to' field may only \
+                be empty if the 'permission_level' field is set to 'view-only' (View).",
+                violation_error_code="wrong_permission_level_for_null_shared_to_field",
+            )
+        ]
 
     def clean(self):
         """
         Prevents sharing a diagram to its owner.
         """
+        self.clean_fields()
         if self.diagram.owner == self.shared_to:
             raise ValidationError(
                 message=f'User with email "{self.shared_to.email}" cannot share the '
