@@ -4,7 +4,7 @@ The application programming interface (API) of a web-based application which is 
 
 The API supports:
 - Store, retrieve, update, delete and copy created UML diagrams;
-- Share UML diagrams to other users with different permissions.
+- Share UML diagrams to other users with different permissions or make them public.
 
 # 2. How to run
 

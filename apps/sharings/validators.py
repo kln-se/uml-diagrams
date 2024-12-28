@@ -36,3 +36,21 @@ class CollaboratorValidator:
                 code="self_sharing",
             )
         return attrs
+
+    @staticmethod
+    def validate_multiple_public_shares(attrs: Dict) -> Dict:
+        """
+        Prevents multiple public shares for the same diagram.
+        Partly intersects with the `clean()` method of Collaborator model
+        by functionality, because model validation by `clean()` is
+        not invoked by default, so it should be done manually
+        inside serializer validate().
+        """
+        diagram = attrs["diagram"]
+        if Collaborator.objects.filter(diagram=diagram, shared_to=None).exists():
+            raise serializers.ValidationError(
+                detail=f"Cannot create multiple public shares for the same object: "
+                f"diagram {diagram.id} has already been shared publicly.",
+                code="multiple_public_shares",
+            )
+        return attrs
