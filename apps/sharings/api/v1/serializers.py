@@ -107,3 +107,21 @@ class CollaboratorSerializer(serializers.ModelSerializer):
             "permission_level",
             "shared_at",
         ]
+
+
+class PublicDiagramSharingSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used just to validate multiple public sharing for same diagram.
+    No request data is expected to be provided to this serializer,
+    so no fields are defined here.
+    """
+
+    class Meta:
+        model = Collaborator
+        fields = []
+
+    def validate(self, attrs):
+        attrs["diagram"] = self.context["diagram"]
+        _ = CollaboratorValidator.validate_multiple_public_shares(attrs)
+        del attrs["diagram"]
+        return attrs

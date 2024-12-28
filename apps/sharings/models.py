@@ -45,7 +45,8 @@ class Collaborator(models.Model):
         unique_together = ("shared_to", "diagram")
         constraints = [
             # Prevents sharing diagram as public with other than "view-only" permission.
-            # This is reinsurance during diagram sharing via admin panel.
+            # This is reinsurance during diagram sharing via admin panel because
+            # public sharing via endpoint automatically uses "view-only" permission.
             models.CheckConstraint(
                 check=Q(shared_to__isnull=True, permission_level="view-only")
                 | Q(shared_to__isnull=False),
@@ -58,14 +59,31 @@ class Collaborator(models.Model):
 
     def clean(self):
         """
-        Prevents sharing a diagram to its owner.
+        This method is used by model validation during its creation via admin panel.
+        Nowhere else it is used, because neither serializer.save() nor model.create()
+        framework methods invoke it by default.
         """
-        self.clean_fields()
+        # Check that 'diagram' field is not None before proceeding and
+        # excluding other fields from validation.
+        self.clean_fields(exclude={"id", "shared_to", "permission_level", "shared_at"})
+        # Prevents sharing a diagram to its owner.
         if self.diagram.owner == self.shared_to:
             raise ValidationError(
                 message=f'User with email "{self.shared_to.email}" cannot share the '
                 f'diagram "{self.diagram.id}" to itself.',
                 code="self_sharing",
+            )
+        # Prevents multiple public shares for the same diagram.
+        elif (
+            self.shared_to is None
+            and Collaborator.objects.filter(
+                diagram=self.diagram, shared_to=None
+            ).exists()
+        ):
+            raise ValidationError(
+                message=f"Cannot create multiple public shares for the same object:\n"
+                f"diagram {self.diagram.id} has already been shared publicly.",
+                code="multiple_public_shares",
             )
         super().clean()
 

@@ -18,14 +18,21 @@ from apps.diagrams.api.v1.serializers import (
 )
 from apps.diagrams.apps import DiagramsConfig
 from apps.diagrams.models import Diagram
-from apps.sharings.api.v1.actions import invite_collaborator, remove_all_collaborators
+from apps.sharings.api.v1.actions import (
+    invite_collaborator,
+    remove_all_collaborators,
+    set_diagram_public,
+)
 from apps.sharings.api.v1.permissions import (
     IsCollaborator,
     IsCollaboratorAndHasViewCopyPermission,
     IsCollaboratorAndHasViewEditPermission,
     IsPublicDiagram,
 )
-from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
+from apps.sharings.api.v1.serializers import (
+    InviteCollaboratorSerializer,
+    PublicDiagramSharingSerializer,
+)
 from apps.sharings.models import Collaborator
 from docs.api.templates.parameters import required_header_auth_parameter
 
@@ -154,6 +161,20 @@ from docs.api.templates.parameters import required_header_auth_parameter
             404: OpenApiResponse(description="Diagram not found"),
         },
     ),
+    set_diagram_public=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Make a diagram shared as public",
+        description="A diagram owner can share his diagram publicly.\n\n"
+        "It will be accessible to anyone who knows the **diagram ID** by "
+        "`api/v1/diagrams/public/{diagram_id}/` endpoint.",
+        parameters=[required_header_auth_parameter],
+        request=None,
+        responses={
+            201: OpenApiResponse(description="Diagram shared as public successfully"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
+    ),
 )
 # endregion
 class DiagramViewSet(viewsets.ModelViewSet):
@@ -210,6 +231,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
             "copy_diagram": DiagramCopySerializer,
             "invite_collaborator": InviteCollaboratorSerializer,
             "remove_all_collaborators": None,
+            "set_diagram_public": PublicDiagramSharingSerializer,
         }
         return serializer_mapping.get(self.action, super().get_serializer_class())
 
@@ -223,7 +245,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="share-invite-user")
     def invite_collaborator(self, *args, **kwargs):
         """
-        Allows owner to share his diagram to another user using its email.
+        Allows diagram owner to share his diagram to another user using its email.
         Admin can share any diagram.
         """
         return invite_collaborator(self, *args, **kwargs)
@@ -231,9 +253,17 @@ class DiagramViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["delete"], url_path="share-unshare-all")
     def remove_all_collaborators(self, *args, **kwargs):
         """
-        Allows owner to remove all collaborators from his diagram.
+        Allows diagram owner to remove all collaborators from his diagram.
         """
         return remove_all_collaborators(self, *args, **kwargs)
+
+    @action(detail=True, methods=["post"], url_path="share-set-public")
+    def set_diagram_public(self, *args, **kwargs):
+        """
+        Allows diagram owner to make a diagram public i.e. share it publicly.
+        Any user can view public diagrams.
+        """
+        return set_diagram_public(self, *args, **kwargs)
 
 
 # region @extend_schema

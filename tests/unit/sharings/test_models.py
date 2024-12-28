@@ -1,10 +1,11 @@
 from random import choice
 
 import pytest
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
 from apps.sharings.constants import PermissionLevels
-from tests.factories import CollaboratorFactory
+from tests.factories import CollaboratorFactory, DiagramFactory
 
 
 def test_collaborator_model_check_constraint_prevents_instance_creation() -> None:
@@ -36,3 +37,36 @@ def test_collaborator_model_check_constraint_allows_instance_creation() -> None:
         shared_to=None, permission_level=PermissionLevels.VIEWONLY
     )
     assert collaborator
+
+
+def test_collaborator_model_prevents_sharing_diagram_to_its_owner() -> None:
+    """
+    GIVEN a diagram object which is tried to be shared to its owner
+    WHEN collaborator model is used to create such a sharing
+    THEN check that collaborator model clean() methods raise an exception.
+    """
+    diagram = DiagramFactory()
+    with pytest.raises(ValidationError) as ex:
+        sharing = CollaboratorFactory(diagram=diagram, shared_to=diagram.owner)
+        sharing.clean()
+    assert ex.value.code == "self_sharing"
+
+
+def test_collaborator_model_prevents_multiple_public_shares_for_the_same_diagram() -> (
+    None
+):
+    """
+    GIVEN a diagram which is tried to be shared publicly twice
+    WHEN collaborator model is used to create such a sharing second time
+    THEN check that collaborator model clean() methods raise an exception.
+    """
+    diagram = DiagramFactory()
+    with pytest.raises(ValidationError) as ex:
+        for _ in range(2):
+            public_sharing = CollaboratorFactory(
+                diagram=diagram,
+                shared_to=None,
+                permission_level=PermissionLevels.VIEWONLY,
+            )
+        public_sharing.clean()
+    assert ex.value.code == "multiple_public_shares"

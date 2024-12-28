@@ -3,7 +3,9 @@ import pytest
 from apps.sharings.api.v1.serializers import (
     CollaboratorSerializer,
     InviteCollaboratorSerializer,
+    PublicDiagramSharingSerializer,
 )
+from apps.sharings.constants import PermissionLevels
 from apps.sharings.models import Collaborator
 from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
 
@@ -196,3 +198,24 @@ class TestCollaboratorSerializer:
         serializer = CollaboratorSerializer(data=data_to_update)
         assert not serializer.is_valid()
         assert "permission_level" in serializer.errors
+
+
+class TestPublicDiagramSharingSerializer:
+    def test_public_diagram_sharing_serializer_validate_multiple_public_shares(
+        self, collaborator: Collaborator
+    ) -> None:
+        """
+        GIVEN a diagram which has already been shared publicly
+        WHEN is_valid() method for the serializer is called
+        THEN check that serializer contains error that
+        multiple public shares are not allowed.
+        """
+        existing_public_sharing = CollaboratorFactory(
+            shared_to=None, permission_level=PermissionLevels.VIEWONLY
+        )
+        serializer = PublicDiagramSharingSerializer(
+            data={}, context={"diagram": existing_public_sharing.diagram}
+        )
+        assert not serializer.is_valid()
+        assert "non_field_errors" in serializer.errors
+        assert serializer.errors["non_field_errors"][0].code == "multiple_public_shares"
