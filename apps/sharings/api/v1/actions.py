@@ -45,3 +45,12 @@ def set_diagram_public(self: ModelViewSet, *_args, **_kwargs) -> Response:
         diagram=diagram, shared_to=None, permission_level=PermissionLevels.VIEWONLY
     )
     return Response(status=status.HTTP_201_CREATED)
+
+
+def set_diagram_private(self: ModelViewSet, *_args, **_kwargs) -> Response:
+    """
+    API endpoint that allows to make a publicly shared diagram private.
+    """
+    diagram = self.get_object()
+    Collaborator.objects.filter(diagram=diagram, shared_to=None).delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)

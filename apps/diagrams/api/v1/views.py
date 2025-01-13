@@ -21,6 +21,7 @@ from apps.diagrams.models import Diagram
 from apps.sharings.api.v1.actions import (
     invite_collaborator,
     remove_all_collaborators,
+    set_diagram_private,
     set_diagram_public,
 )
 from apps.sharings.api.v1.permissions import (
@@ -175,6 +176,20 @@ from docs.api.templates.parameters import required_header_auth_parameter
             404: OpenApiResponse(description="Diagram not found"),
         },
     ),
+    set_diagram_private=extend_schema(
+        tags=[DiagramsConfig.tag],
+        summary="Make a publicly shared diagram private again",
+        description="A diagram owner can make his diagram private again, if it was "
+        "shared as public before.\n\n"
+        "It will become accessible only by the diagram owner and its collaborators.",
+        parameters=[required_header_auth_parameter],
+        request=None,
+        responses={
+            204: OpenApiResponse(description="Diagram become private successfully"),
+            401: OpenApiResponse(description="Invalid token or token not provided"),
+            404: OpenApiResponse(description="Diagram not found"),
+        },
+    ),
 )
 # endregion
 class DiagramViewSet(viewsets.ModelViewSet):
@@ -265,6 +280,13 @@ class DiagramViewSet(viewsets.ModelViewSet):
         """
         return set_diagram_public(self, *args, **kwargs)
 
+    @action(detail=True, methods=["post"], url_path="share-set-private")
+    def set_diagram_private(self, *args, **kwargs):
+        """
+        Allows diagram owner to make publicly shared diagram private.
+        """
+        return set_diagram_private(self, *args, **kwargs)
+
 
 # region @extend_schema
 @extend_schema_view(
@@ -300,9 +322,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
         parameters=[required_header_auth_parameter],
         responses={
             201: DiagramCopySerializer,
-            400: OpenApiResponse(
-                description="Possible errors:\n" "- JSON parse error."
-            ),
+            400: OpenApiResponse(description="Possible errors:\n- JSON parse error."),
             401: OpenApiResponse(description="Invalid token or token not provided"),
             403: OpenApiResponse(
                 description="Insufficient permission to copy diagram to user's account"
@@ -320,9 +340,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
         parameters=[required_header_auth_parameter],
         responses={
             200: SharedDiagramSaveSerializer,
-            400: OpenApiResponse(
-                description="Possible errors:\n" "- JSON parse error."
-            ),
+            400: OpenApiResponse(description="Possible errors:\n- JSON parse error."),
             401: OpenApiResponse(description="Invalid token or token not provided"),
             403: OpenApiResponse(
                 description="Insufficient permission to save made changes"
@@ -465,3 +483,15 @@ class PublicDiagramViewSet(mixins.RetrieveModelMixin, GenericViewSet):
     queryset: QuerySet[Diagram] = Diagram.objects.all()
     serializer_class = DiagramSerializer
     permission_classes = [AllowAny, IsPublicDiagram]
+
+    def get_queryset(self):
+        """
+        Returns just diagrams that were shared publicly.
+        Otherwise, if diagram is not public but its id (pk) was provided to the endpoint
+        it will be processed by permission classes as if it was public.
+        """
+        return (
+            super()
+            .get_queryset()
+            .filter(collaborator__isnull=False, collaborator__shared_to=None)
+        )

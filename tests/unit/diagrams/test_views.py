@@ -28,6 +28,7 @@ from apps.sharings.api.v1.permissions import (
     IsPublicDiagram,
 )
 from apps.sharings.api.v1.serializers import InviteCollaboratorSerializer
+from apps.sharings.constants import PermissionLevels
 from apps.users.constants import UserRoles
 from tests.factories import CollaboratorFactory, DiagramFactory, UserFactory
 
@@ -370,3 +371,18 @@ class TestPublicDiagramViewSet:
         viewset = PublicDiagramViewSet()
         assert viewset.serializer_class == DiagramSerializer
         assert viewset.permission_classes == [AllowAny, IsPublicDiagram]
+
+    def test_get_queryset_returns_just_public_diagrams(self) -> None:
+        public_diagram, shared_diagram, not_shared_diagram = (
+            CollaboratorFactory(
+                shared_to=None, permission_level=PermissionLevels.VIEWONLY
+            ).diagram,
+            CollaboratorFactory().diagram,
+            DiagramFactory(),
+        )
+        viewset = PublicDiagramViewSet()
+        queryset = viewset.get_queryset()
+        assert queryset.count() == 1
+        assert public_diagram in queryset
+        assert shared_diagram not in queryset
+        assert not_shared_diagram not in queryset

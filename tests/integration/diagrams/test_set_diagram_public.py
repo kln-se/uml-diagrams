@@ -1,3 +1,5 @@
+import uuid
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -39,16 +41,34 @@ class TestSetDiagramPublic:
         WHEN he requests POST /api/v1/diagrams/{diagram_id}/share-set-public/
         THEN check that 404 NOT FOUND is returned.
         """
-        diagram = DiagramFactory.build()
         url = f"{reverse(
             DIAGRAM_SET_DIAGRAM_PUBLIC_URL_NAME,
-            kwargs={'pk': diagram.pk}
+            kwargs={'pk': uuid.uuid4()}
         )}"
         response = client.post(path=url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
-        assert not Collaborator.objects.filter(diagram=diagram).exists()
 
-    def test_set_diagram_public_diagram_is_already_public(
+    def test_set_diagram_public_diagram_does_not_belong_to_user(
+        self, client: APIClient, logged_in_user: User
+    ) -> None:
+        """
+        GIVEN a logged-in user who tries to set public the diagram
+        which is not owned by him
+        WHEN he requests POST /api/v1/diagrams/{diagram_id}/share-set-public/
+        THEN check that 404 NOT FOUND is returned.
+        """
+        diagram_not_owned_by_user = DiagramFactory()
+        url = f"{reverse(
+            DIAGRAM_SET_DIAGRAM_PUBLIC_URL_NAME,
+            kwargs={'pk': diagram_not_owned_by_user.pk}
+        )}"
+        response = client.post(path=url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert not Collaborator.objects.filter(
+            diagram=diagram_not_owned_by_user
+        ).exists()
+
+    def test_set_diagram_public_diagram_has_been_already_public(
         self, client: APIClient, logged_in_user: User
     ) -> None:
         """
