@@ -16,8 +16,8 @@ class CustomUserAdmin(admin.ModelAdmin):
         "date_joined",
         "last_login",
     )
-    readonly_fields = ["date_joined", "last_login"]
-    search_fields = ["email", "first_name", "last_name"]
+    readonly_fields = ("date_joined", "last_login")
+    search_fields = ("email", "first_name", "last_name")
 
     def save_model(self, request: WSGIRequest, obj: User, form, change: bool):
         """

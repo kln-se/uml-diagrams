@@ -6,3 +6,5 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",  # noqa: F405
     },
 }
+
+LOGGING = {"version": 1, "disable_existing_loggers": False}

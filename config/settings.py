@@ -66,7 +66,60 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Custom middleware
     "apps.core.middleware.CustomExceptionMiddleware",
+    "apps.core.middleware.LogAllRequestsMiddleware",
 ]
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
+    "formatters": {
+        "simple": {
+            "format": "{levelname} {asctime} {message}",
+            "style": "{",
+        },
+        "verbose": {
+            "format": "{levelname} {asctime} {name} {request.method} {message} {status_code}",  # noqa: E501
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filters": ["require_debug_false"],
+            "filename": BASE_DIR / "logs" / "logs.log",
+            "formatter": "verbose",
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "filters": ["require_debug_true"],
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "django.security": {
+            "handlers": ["file", "console"],
+            "level": env.str("DJANGO_LOG_LEVEL", default="INFO"),
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["file", "console"],
+            "level": env.str("DJANGO_LOG_LEVEL", default="INFO"),
+            "propagate": False,
+        },
+    },
+}
+
 
 ROOT_URLCONF = "config.urls"
 
@@ -185,7 +238,7 @@ SPECTACULAR_SETTINGS = {
             - create, retrieve, update or delete sharing invitations.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.18.2-dev",
+    "VERSION": "1.18.3-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

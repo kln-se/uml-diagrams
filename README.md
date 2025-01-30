@@ -35,7 +35,9 @@ pip install -r requirements.txt
 # Django basic
 SECRET_KEY=<some-secret-key>
 # Should be overridden when running container like "docker run ... -e DJANGO_DEBUG_MODE=False"
-DJANGO_DEBUG_MODE=True
+DJANGO_DEBUG_MODE=False
+# Django logging
+DJANGO_LOG_LEVEL=INFO
 
 # Admin panel
 # Basic superuser (admin) account for the application

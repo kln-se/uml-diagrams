@@ -147,6 +147,7 @@ dmypy.json
 
 # Static files and media directory
 media/
+staticfiles/
 
 # Other & custom
 beta/

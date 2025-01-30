@@ -11,7 +11,7 @@ class DiagramAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
-    search_fields = ["title", "owner__email"]
+    search_fields = ("title", "owner__email")
 
 
 admin.site.register(Diagram, DiagramAdmin)
