@@ -21,7 +21,7 @@ Example usage in PowerShell to run container being in the project root directory
 # Vars
 $API_IMAGE_NAME = "uml-diagrams-api"
 $API_CONTAINER_NAME = "uml-diagrams-api"
-$API_VERSION = "1.18.4-dev"
+$API_VERSION = "1.19.0-dev"
 # For incoming connections
 $GATEWAY_EXT_PORT = 8081
 
@@ -162,11 +162,13 @@ function docker-shell-nginx {
 # Common
 function docker-create-vols {
     docker volume create uml_diagrams_pg_db_data;
-    docker volume create uml_diagrams_static
+    docker volume create uml_diagrams_static;
+    docker volume create uml_diagrams_django_logs
 }
 function docker-remove-vols {
     docker volume rm uml_diagrams_pg_db_data;
-    docker volume rm uml_diagrams_static
+    docker volume rm uml_diagrams_static;
+    docker volume rm uml_diagrams_django_logs
 }
 function docker-create-net {
     docker network create uml_diagrams_net
@@ -312,6 +314,10 @@ switch ($target) {
     }
     "docker-compose-del" {
         docker-compose-del
+    }
+    "docker-compose-rebuild" {
+        docker-compose -p uml-diagrams -v down;
+        docker-compose build --no-cache
     }
     default {
         Write-Host "Invalid target: $target"

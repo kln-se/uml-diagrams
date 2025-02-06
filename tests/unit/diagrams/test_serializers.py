@@ -3,6 +3,7 @@ import pytest
 from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
     DiagramListSerializer,
+    DiagramListSerializerWithPublicFlag,
     DiagramSerializer,
     SharedDiagramListSerializer,
     SharedDiagramSaveSerializer,
@@ -178,3 +179,26 @@ class TestSharedDiagramSaveSerializer:
         instance = serializer.save()
         assert instance.title == diagram.title
         assert instance.updated_at != new_diagram_data.updated_at
+
+
+class TestDiagramListSerializerWithPublicFlag:
+    def test_diagram_list_serializer_with_public_flag_correct_returned_data(
+        self, diagram: Diagram
+    ) -> None:
+        """
+        GIVEN a random diagram object that was added attribute "is_public"
+        as it would be made by get_queryset() method inside DiagramViewSet
+        WHEN serializer is called
+        THEN check if serialized data is coincident with the diagram's data.
+        """
+        diagram.is_public = True
+        serializer = DiagramListSerializerWithPublicFlag(diagram)
+        assert serializer.data == {
+            "diagram_id": diagram.id,
+            "title": diagram.title,
+            "owner_id": diagram.owner.id,
+            "owner_email": diagram.owner.email,
+            "created_at": diagram.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": diagram.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "is_public": True,
+        }

@@ -3,6 +3,7 @@ name: uml-diagrams
 volumes:
     pg_db_data:
     static:
+    django_logs:
 
 networks:
     net:
@@ -22,27 +23,28 @@ services:
         healthcheck:
             test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
             start_period: 10s
-            interval: 5s
-            timeout: 5s
+            interval: 30s
+            timeout: 10s
             retries: 3
 
     api:
         container_name: uml-diagrams-api
         build: ./
-        image: uml-diagrams-api:1.18.4-dev
+        image: uml-diagrams-api:1.19.0-dev
         env_file: .env
         environment:
             - DB_HOST=uml-diagrams-postgres
             - DJANGO_DEBUG_MODE=False
         volumes:
             - static:/app/staticfiles
+            - django_logs:/app/logs
         networks:
             - net
         restart: unless-stopped
         healthcheck:
-            test: [ "CMD-SHELL", "curl -f -I http://localhost:8000/health-check/" ]
+            test: [ "CMD-SHELL", "curl -f -I http://127.0.0.1:8000/health-check/ || exit 1" ]
             start_period: 10s
-            interval: 5s
+            interval: 30s
             timeout: 5s
             retries: 3
         depends_on:

@@ -34,6 +34,7 @@ def test_retrieve_diagrams_visible_to_authenticated_owner(
             "updated_at": diagram_owned_by_user.updated_at.strftime(
                 "%Y-%m-%dT%H:%M:%S.%fZ"
             ),
+            "is_public": False,  # because testable diagram is not public
         }
         assert results[idx] == diagram_data_as_dict
 

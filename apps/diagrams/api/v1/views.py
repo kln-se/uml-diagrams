@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import OuterRef, QuerySet, Subquery
+from django.db.models import Exists, OuterRef, QuerySet, Subquery
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import action
@@ -11,7 +11,7 @@ from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
 from apps.diagrams.api.v1.permissions import IsAdminOrIsDiagramOwner
 from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
-    DiagramListSerializer,
+    DiagramListSerializerWithPublicFlag,
     DiagramSerializer,
     SharedDiagramListSerializer,
     SharedDiagramSaveSerializer,
@@ -46,7 +46,7 @@ from docs.api.templates.parameters import required_header_auth_parameter
         description="Returns a list of all available diagrams.",
         parameters=[required_header_auth_parameter],
         responses={
-            200: DiagramListSerializer(many=True),
+            200: DiagramListSerializerWithPublicFlag(many=True),
             401: OpenApiResponse(description="Invalid token or token not provided"),
         },
     ),
@@ -213,10 +213,18 @@ class DiagramViewSet(viewsets.ModelViewSet):
         Filter the queryset based on the user's permissions:
         - if the user is an admin, return all diagrams;
         - otherwise, return only the diagrams that belong to the user.
+        Each diagram object is annotated with value of whether it is public or not.
+        It will help to share diagram as public
+        without having to make unnecessary intermediate requests.
         """
         if self.request.user.is_admin:
             return Diagram.objects.all()
-        return self.queryset.filter(owner=self.request.user)
+        diagrams = self.queryset.filter(owner=self.request.user)
+        return diagrams.annotate(
+            is_public=Exists(
+                Collaborator.objects.filter(diagram_id=OuterRef("id"), shared_to=None)
+            )
+        )
 
     def perform_update(self, serializer: DiagramSerializer) -> None:
         """
@@ -242,7 +250,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         serializer_mapping = {
-            "list": DiagramListSerializer,
+            "list": DiagramListSerializerWithPublicFlag,
             "copy_diagram": DiagramCopySerializer,
             "invite_collaborator": InviteCollaboratorSerializer,
             "remove_all_collaborators": None,
@@ -297,7 +305,7 @@ class DiagramViewSet(viewsets.ModelViewSet):
         "by another users.",
         parameters=[required_header_auth_parameter],
         responses={
-            200: DiagramListSerializer(many=True),
+            200: SharedDiagramListSerializer(many=True),
             401: OpenApiResponse(description="Invalid token or token not provided"),
         },
     ),

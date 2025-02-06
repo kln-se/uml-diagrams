@@ -11,7 +11,7 @@ from apps.diagrams.api.v1.pagination import DiagramViewSetPagination
 from apps.diagrams.api.v1.permissions import IsAdminOrIsDiagramOwner
 from apps.diagrams.api.v1.serializers import (
     DiagramCopySerializer,
-    DiagramListSerializer,
+    DiagramListSerializerWithPublicFlag,
     DiagramSerializer,
     SharedDiagramListSerializer,
     SharedDiagramSaveSerializer,
@@ -214,7 +214,7 @@ class TestDiagramViewSet:
     @pytest.mark.parametrize(
         ("action", "serializer_class"),
         [
-            ("list", DiagramListSerializer),
+            ("list", DiagramListSerializerWithPublicFlag),
             ("retrieve", DiagramSerializer),
             ("copy_diagram", DiagramCopySerializer),
             ("invite_collaborator", InviteCollaboratorSerializer),

@@ -116,6 +116,21 @@ class DiagramListSerializer(serializers.ModelSerializer):
         ]
 
 
+class DiagramListSerializerWithPublicFlag(DiagramListSerializer):
+    """
+    Used to list diagrams and show whether diagram is public via:
+    - `GET api/v1/diagrams/`.
+    Diagram object is annotated with the field 'is_public' in get_queryset()
+    method of DiagramViewSet.
+    """
+
+    is_public = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Diagram
+        fields = DiagramListSerializer.Meta.fields + ["is_public"]
+
+
 class SharedDiagramListSerializer(DiagramListSerializer):
     """
     Used to list diagrams via:
@@ -124,7 +139,7 @@ class SharedDiagramListSerializer(DiagramListSerializer):
     method of SharedWithMeDiagramViewSet.
     """
 
-    permission_level = serializers.ReadOnlyField()
+    permission_level = serializers.CharField(read_only=True)
 
     class Meta:
         model = Diagram
