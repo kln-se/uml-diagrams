@@ -65,7 +65,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Custom middleware
-    "apps.core.middleware.CustomExceptionMiddleware",
     "apps.core.middleware.LogAllRequestsMiddleware",
 ]
 
@@ -238,7 +237,7 @@ SPECTACULAR_SETTINGS = {
             - create, retrieve, update or delete sharing invitations.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.19.1-dev",
+    "VERSION": "1.19.2-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

@@ -6,6 +6,8 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from apps.core.views import CustomHttpErrorViews
+
 api_v1_urlpatterns = [
     # API docs
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -25,9 +27,15 @@ api_v1_urlpatterns = [
     path("sharings/", include("apps.sharings.api.v1.urls")),
 ]
 
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", include(api_v1_urlpatterns)),
     path("health-check/", include("apps.core.urls")),
 ]
+
+# Should be overridden here, according to:
+# https://docs.djangoproject.com/en/5.0/topics/http/views/#customizing-error-views
+handler400 = CustomHttpErrorViews.bad_request_view
+handler403 = CustomHttpErrorViews.permission_denied_view
+handler404 = CustomHttpErrorViews.page_not_found_view
+handler500 = CustomHttpErrorViews.server_error_view
