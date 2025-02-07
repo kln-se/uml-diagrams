@@ -26,7 +26,7 @@ docker-compose-stop:
 	sudo docker compose -p $$PROJECT_NAME stop
 
 docker-compose-restart:
-	sudo docker compose restart
+	sudo docker compose -p $$PROJECT_NAME restart
 
 docker-compose-del:
 	sudo docker compose -p $$PROJECT_NAME down -v --rmi local

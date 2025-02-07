@@ -238,7 +238,7 @@ SPECTACULAR_SETTINGS = {
             - create, retrieve, update or delete sharing invitations.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.19.0-dev",
+    "VERSION": "1.19.1-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
