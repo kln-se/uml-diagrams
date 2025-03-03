@@ -23,7 +23,7 @@ DATABASES = {
 LOGGING["handlers"]["console"] = {  # noqa: F405
     "level": "INFO",
     "class": "logging.StreamHandler",
-    "formatter": "verbose",
+    "formatter": "verbose_json",
 }
 
 DEBUG = True

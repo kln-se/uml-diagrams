@@ -56,6 +56,7 @@ services:
         build: ./deploy/nginx/
         volumes:
             - static:/staticfiles
+            - ./deploy/nginx/uml_diagrams_api.conf:/etc/nginx/templates/default.conf.template:ro
         networks:
             - net
         ports:

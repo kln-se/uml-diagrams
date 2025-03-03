@@ -77,6 +77,12 @@ CORS_ALLOWED_ORIGIN=http://<some-host>:<some-port>
 # Frontend (Optional)
 # Host and port where the frontend is served, for example: http://127.0.0.1:3000/
 VITE_API_URL=http://<some-host>:<some-port>/
+
+# Logging / grafana
+GF_AUTH_ANONYMOUS_ENABLED=false
+GF_SECURITY_ADMIN_EMAIL=<some-email>
+GF_SECURITY_ADMIN_PASSWORD=<some-password>
+GF_LIVE_ALLOWED_ORIGINS=http://<some-host>:<some-port>/
 ```
 
 2.1.5.1. By the default the PostgreSQL database will be used.

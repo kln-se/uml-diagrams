@@ -89,6 +89,10 @@ LOGGING = {
             "format": "{levelname} {asctime} {name} {request.method} {message} {status_code}",  # noqa: E501
             "style": "{",
         },
+        "verbose_json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(levelname)s %(asctime)s %(name)s %(request)s %(message)s %(status_code)s",  # noqa: E501
+        },
     },
     "handlers": {
         "file": {
@@ -101,8 +105,7 @@ LOGGING = {
         "console": {
             "level": "INFO",
             "class": "logging.StreamHandler",
-            "filters": ["require_debug_true"],
-            "formatter": "simple",
+            "formatter": "verbose_json",
         },
     },
     "loggers": {
@@ -237,7 +240,7 @@ SPECTACULAR_SETTINGS = {
             - create, retrieve, update or delete sharing invitations.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.19.2-dev",
+    "VERSION": "1.19.3-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 

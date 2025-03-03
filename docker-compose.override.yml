@@ -1,0 +1,53 @@
+volumes:
+    loki_data:
+    grafana_data:
+
+networks:
+    net:
+
+services:
+    grafana:
+        container_name: uml-diagrams-grafana
+        build: ./deploy/logging/grafana
+        env_file: .env
+        volumes:
+          - grafana_data:/var/lib/grafana
+          - ./deploy/logging/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+          - ./deploy/logging/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+          - ./deploy/logging/grafana/dashboards:/var/lib/grafana/dashboards
+          - ./deploy/logging/grafana/grafana.ini:/etc/grafana/grafana.ini
+        networks:
+            - net
+        restart: unless-stopped
+        depends_on:
+          - loki
+
+    loki:
+        container_name: uml-diagrams-loki
+        build: ./deploy/logging/loki
+        command: -config.file=/etc/loki/config.yml
+        env_file: .env
+        volumes:
+            - ./deploy/logging/loki/config.yml:/etc/loki/config.yml
+            - loki_data:/loki
+        networks:
+            - net
+        restart: unless-stopped
+
+    promtail:
+        container_name: uml-diagrams-promtail
+        build: ./deploy/logging/promtail
+        command: -config.file=/etc/promtail/config.yml
+        env_file: .env
+        volumes:
+            - ./deploy/logging/promtail/config.yml:/etc/promtail/config.yml
+            - /var/lib/docker/containers:/var/lib/docker/containers:ro
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            - net
+        restart: unless-stopped
+        depends_on:
+            - loki
+            - nginx
+            - api
+            - postgres

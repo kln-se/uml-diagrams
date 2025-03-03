@@ -19,9 +19,11 @@ Example usage in PowerShell to run container being in the project root directory
 #>
 
 # Vars
-$API_IMAGE_NAME = "uml-diagrams-api"
-$API_CONTAINER_NAME = "uml-diagrams-api"
-$API_VERSION = "1.19.2-dev"
+$PROJECT_NAME = "uml-diagrams"
+$API_IMAGE_NAME = "${PROJECT_NAME}-api"
+$API_CONTAINER_NAME = "${PROJECT_NAME}-api"
+$API_VERSION = "1.19.3-dev"
+$DB_NAME = "uml_diagrams"
 # For incoming connections
 $GATEWAY_EXT_PORT = 8081
 
@@ -35,41 +37,41 @@ function docker-build-postgres {
         --no-cache `
         ./deploy/db `
         --platform linux/amd64 `
-        -t uml-diagrams-postgres:15.8
+        -t "${PROJECT_NAME}-postgres:15.8"
 }
 function docker-run-postgres {
     docker run `
-        --name uml-diagrams-postgres `
+        --name "${PROJECT_NAME}-postgres" `
         --env-file .env `
-        -v uml_diagrams_pg_db_data:/var/lib/postgresql/data `
-        --net uml_diagrams_net `
+        -v "${PROJECT_NAME}_pg_db_data:/var/lib/postgresql/data" `
+        --net "${PROJECT_NAME}_net" `
         -p 5432:5432 `
-        -d uml-diagrams-postgres:15.8
+        -d "${PROJECT_NAME}-postgres:15.8"
 }
 function docker-restart-postgres {
-    docker restart uml-diagrams-postgres
+    docker restart "${PROJECT_NAME}-postgres"
 }
 function docker-stop-postgres {
-    docker stop uml-diagrams-postgres
+    docker stop "${PROJECT_NAME}-postgres"
 }
 function docker-kill-postgres {
-    docker kill uml-diagrams-postgres
+    docker kill "${PROJECT_NAME}-postgres"
 }
 function docker-remove-postgres {
     $confirmation = Read-Host "WARN: should the resources (volume and network) associated with the container also be deleted? Proceed [y/n]?"
     if ($confirmation -eq 'y') {
-        docker rm uml-diagrams-postgres;
-        docker volume rm uml_diagrams_pg_db_data;
-        docker network rm uml_diagrams_net;
+        docker rm "${PROJECT_NAME}-postgres";
+        docker volume rm "${PROJECT_NAME}_pg_db_data";
+        docker network rm "${PROJECT_NAME}_net";
     } else {
-        docker rm uml-diagrams-postgres;
+        docker rm "${PROJECT_NAME}-postgres";
     }
 }
 function docker-shell-postgres {
-    docker exec -it uml-diagrams-postgres bash
+    docker exec -it "${PROJECT_NAME}-postgres" bash
 }
 function docker-psql-postgres {
-    docker exec -it uml-diagrams-postgres psql -U postgres -d db.postgresql.uml-diagrams
+    docker exec -it "${PROJECT_NAME}-postgres" psql -U postgres -d ${DB_NAME}
 }
 
 
@@ -84,10 +86,10 @@ function docker-run-api {
     docker run `
         --name ${API_CONTAINER_NAME} `
         --env-file .env `
-        --net uml_diagrams_net `
-        -v uml_diagrams_static:/app/staticfiles `
-        -e DB_HOST=uml-diagrams-postgres `
-        -e DJANGO_DEBUG_MODE=True `
+        --net "${PROJECT_NAME}_net" `
+        -v "${PROJECT_NAME}_static:/app/staticfiles" `
+        -e "DB_HOST=${PROJECT_NAME}-postgres" `
+        -e DJANGO_DEBUG_MODE=False `
         -p 8000:8000 `
         -d ${API_IMAGE_NAME}:${API_VERSION}
 }
@@ -104,8 +106,8 @@ function docker-remove-api {
     $confirmation = Read-Host "WARN: should the resources (volume and network) associated with the container also be deleted? Proceed [y/n]?"
     if ($confirmation -eq 'y') {
         docker rm ${API_CONTAINER_NAME};
-        docker volume rm uml_diagrams_static;
-        docker network rm uml_diagrams_net;
+        docker volume rm "${PROJECT_NAME}_static";
+        docker network rm "${PROJECT_NAME}_net";
     } else {
         docker rm ${API_CONTAINER_NAME};
     }
@@ -130,51 +132,55 @@ function docker-build-nginx {
         --no-cache `
         ./deploy/nginx `
         --platform linux/amd64 `
-        -t uml-diagrams-nginx:latest
+        -t "${PROJECT_NAME}-nginx:latest"
 }
 function docker-run-nginx {
     docker run `
-        --name uml-diagrams-nginx `
-        --net uml_diagrams_net `
-        -v uml_diagrams_static:/staticfiles `
+        --name "${PROJECT_NAME}-nginx" `
+        --net "${PROJECT_NAME}_net" `
+        -v "${PROJECT_NAME}_static:/staticfiles" `
         -p ${GATEWAY_EXT_PORT}:80 `
-        -d uml-diagrams-nginx:latest
+        -d "${PROJECT_NAME}-nginx:latest"
 }
 function docker-restart-nginx {
-    docker restart uml-diagrams-nginx
+    docker restart "${PROJECT_NAME}-nginx"
 }
 function docker-stop-nginx {
-    docker stop uml-diagrams-nginx
+    docker stop "${PROJECT_NAME}-nginx"
 }
 function docker-kill-nginx {
-    docker kill uml-diagrams-nginx
+    docker kill "${PROJECT_NAME}-nginx"
 }
 function docker-remove-nginx {
-    docker rm uml-diagrams-nginx;
+    docker rm "${PROJECT_NAME}-nginx";
     echo "WARN: app static files volume 'uml_diagrams_static' should be removed manually (e.g. `docker volume rm uml_diagrams_static`).";
-    echo "WARN: docker network 'uml_diagrams_net' should be removed manually (e.g. `docker network rm uml_diagrams_net`)."
+    echo "WARN: docker network 'uml-diagrams_net' should be removed manually (e.g. `docker network rm uml-diagrams_net`)."
 }
 function docker-shell-nginx {
-    docker exec -it uml-diagrams-nginx bash
+    docker exec -it "${PROJECT_NAME}-nginx" bash
 }
 
 
 # Common
 function docker-create-vols {
-    docker volume create uml_diagrams_pg_db_data;
-    docker volume create uml_diagrams_static;
-    docker volume create uml_diagrams_django_logs
+    docker volume create "${PROJECT_NAME}_pg_db_data";
+    docker volume create "${PROJECT_NAME}_static";
+    docker volume create "${PROJECT_NAME}_django_logs";
+    docker volume create "${PROJECT_NAME}_grafana_data";
+    docker volume create "${PROJECT_NAME}_loki_data"
 }
 function docker-remove-vols {
-    docker volume rm uml_diagrams_pg_db_data;
-    docker volume rm uml_diagrams_static;
-    docker volume rm uml_diagrams_django_logs
+    docker volume rm "${PROJECT_NAME}_pg_db_data";
+    docker volume rm "${PROJECT_NAME}_static";
+    docker volume rm "${PROJECT_NAME}_django_logs";
+    docker volume rm "${PROJECT_NAME}_grafana_data";
+    docker volume rm "${PROJECT_NAME}_loki_data"
 }
 function docker-create-net {
-    docker network create uml_diagrams_net
+    docker network create "${PROJECT_NAME}_net"
 }
 function docker-remove-net {
-    docker network rm uml_diagrams_net
+    docker network rm "${PROJECT_NAME}_net"
 }
 
 
@@ -182,17 +188,26 @@ function docker-remove-net {
 function docker-compose-up {
     docker-compose up -d
 }
+function docker-compose-up-no-logs {
+    docker-compose up -d `
+    --scale grafana=0 `
+    --scale loki=0 `
+    --scale promtail=0
+}
 function docker-compose-down {
-    docker-compose -p uml-diagrams down
+    docker-compose -p ${PROJECT_NAME} down
 }
 function docker-compose-stop {
-    docker-compose -p uml-diagrams stop
+    docker-compose -p ${PROJECT_NAME} stop
 }
 function docker-compose-restart {
-    docker-compose restart
+    docker-compose -p ${PROJECT_NAME} restart
 }
 function docker-compose-del {
-    docker-compose -p uml-diagrams down -v --rmi local
+    docker-compose -p ${PROJECT_NAME} down -v --rmi local
+}
+function docker-compose-stop-logs {
+    docker-compose -p ${PROJECT_NAME} stop grafana loki promtail
 }
 
 
@@ -316,10 +331,17 @@ switch ($target) {
         docker-compose-del
     }
     "docker-compose-rebuild" {
-        docker-compose -p uml-diagrams -v down;
+        docker-compose -p ${PROJECT_NAME} -v down;
         docker-compose build --no-cache
     }
+    "docker-compose-up-no-logs" {
+        docker-compose-up-no-logs
+    }
+    "docker-compose-stop-logs" {
+        docker-compose-stop-logs
+    }
     default {
-        Write-Host "Invalid target: $target"
+        Write-Host "WARN: invalid target: $target";
+        Write-Host "WARN: maybe you meant 'docker-compose-<cmd>' or 'docker-<cmd>-<service_name>' command?"
     }
 }

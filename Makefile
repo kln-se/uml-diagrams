@@ -2,14 +2,13 @@
 
 # General project settings
 PROJECT_NAME = uml-diagrams
-NETWORK_NAME = uml_diagrams_net
 # DB
-DB_CONTAINER_NAME = uml-diagrams-postgres
+DB_CONTAINER_NAME = $(PROJECT_NAME)-postgres
 DB_USER = postgres
-DB_NAME = db.postgresql.uml-diagrams
+DB_NAME = postgres
 # API
-API_IMAGE_NAME = uml-diagrams-api
-API_CONTAINER_NAME = uml-diagrams-api
+API_IMAGE_NAME = $(PROJECT_NAME)-api
+API_CONTAINER_NAME = $(PROJECT_NAME)-api
 # Build settings
 DOCKER_BUILDKIT = 1
 BUILDKIT_PROGRESS = plain
@@ -19,11 +18,20 @@ BUILDKIT_PROGRESS = plain
 docker-compose-up:
 	sudo docker compose up -d
 
+docker-compose-up-no-logs:
+	sudo docker compose up -d \
+		--scale grafana=0 \
+		--scale loki=0 \
+		--scale promtail=0
+
 docker-compose-down:
 	sudo docker compose -p $$PROJECT_NAME down
 
 docker-compose-stop:
 	sudo docker compose -p $$PROJECT_NAME stop
+
+docker-compose-stop-logs:
+	sudo docker compose -p $$PROJECT_NAME stop grafana loki promtail
 
 docker-compose-restart:
 	sudo docker compose -p $$PROJECT_NAME restart
