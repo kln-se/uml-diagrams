@@ -31,6 +31,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", include(api_v1_urlpatterns)),
     path("health-check/", include("apps.core.urls")),
+    # Prometheus metrics
+    path("", include("django_prometheus.urls")),
 ]
 
 # Should be overridden here, according to:

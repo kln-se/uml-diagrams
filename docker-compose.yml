@@ -30,7 +30,7 @@ services:
     api:
         container_name: uml-diagrams-api
         build: ./
-        image: uml-diagrams-api:1.19.2-dev
+        image: uml-diagrams-api:1.19.4-dev
         env_file: .env
         environment:
             - DB_HOST=uml-diagrams-postgres

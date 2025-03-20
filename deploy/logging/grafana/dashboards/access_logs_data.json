@@ -29,88 +29,17 @@
   "links": [],
   "panels": [
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 24,
+      "id": 33,
       "panels": [],
-      "title": "KPI's",
+      "title": "Nginx General",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "${loki_datasource}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "transparent",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 9,
-        "x": 0,
-        "y": 1
-      },
-      "hideTimeOverride": false,
-      "id": 4,
-      "maxDataPoints": 300,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "sum"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "value",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "${loki_datasource}"
-          },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "sum by() (count_over_time({service_name=\"uml-diagrams-api\"}[$__interval]))  ",
-          "legendFormat": "",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": "24h",
-      "title": "Total requests to api (api)",
-      "type": "stat"
     },
     {
       "datasource": {
@@ -131,10 +60,6 @@
               {
                 "color": "rgba(110, 157, 228, 0.76)",
                 "value": null
-              },
-              {
-                "color": "rgba(73, 124, 202, 1)",
-                "value": 20
               }
             ]
           },
@@ -144,8 +69,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 7,
-        "x": 9,
+        "w": 16,
+        "x": 0,
         "y": 1
       },
       "id": 5,
@@ -177,7 +102,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum by (status)\r\n(count_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n| request_uri=~\"^/api/.*\"\r\n|  __error__=\"\" [$__interval]))",
+          "expr": "sum by (status)\r\n(count_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n|  __error__=\"\" [$__interval]))",
           "instant": false,
           "legendFormat": "HTTP Status: {{status}}",
           "queryType": "range",
@@ -186,7 +111,7 @@
           "step": ""
         }
       ],
-      "title": "Requests to api per status code (nginx)",
+      "title": "Response status codes",
       "type": "stat"
     },
     {
@@ -274,7 +199,7 @@
         }
       ],
       "timeFrom": "1h",
-      "title": "% of 5xx requests (nginx)",
+      "title": "% of 5xx Requests",
       "type": "stat"
     },
     {
@@ -309,8 +234,8 @@
         "x": 19,
         "y": 1
       },
+      "hideTimeOverride": false,
       "id": 30,
-      "maxDataPoints": 1,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -346,8 +271,22 @@
           "refId": "A"
         }
       ],
-      "title": "logs in bytes",
+      "timeFrom": "now-1M",
+      "title": "Logs in bytes",
       "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 24,
+      "panels": [],
+      "title": "KPI's",
+      "type": "row"
     },
     {
       "datasource": {
@@ -382,7 +321,6 @@
         "y": 5
       },
       "id": 31,
-      "maxDataPoints": 1,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -418,8 +356,126 @@
           "refId": "A"
         }
       ],
-      "title": "log lines",
+      "timeFrom": "now-1M",
+      "title": "Log lines",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${loki_datasource}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 10
+      },
+      "hideTimeOverride": false,
+      "id": 4,
+      "maxDataPoints": 300,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "text": {},
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${loki_datasource}"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "sum by() (count_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n| request_uri=~\"^/api/.*\"\r\n|  __error__=\"\" [$__interval]))",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "24h",
+      "title": "Total requests to API",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${loki_datasource}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 6,
+        "y": 10
+      },
+      "id": 11,
+      "options": {
+        "dedupStrategy": "signature",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": false,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${loki_datasource}"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "{service_name=\"uml-diagrams-nginx\"} \r\n| json \r\n| request_uri=~\"^/api/.*\"\r\n| line_format \"➡️ {{.status}} {{.request_method}} {{.request_uri}}\"",
+          "legendFormat": "",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent requests to API",
+      "type": "logs"
     },
     {
       "datasource": {
@@ -438,7 +494,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "text",
+                "color": "purple",
                 "value": null
               }
             ]
@@ -447,10 +503,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 4,
         "w": 4,
-        "x": 0,
-        "y": 9
+        "x": 20,
+        "y": 10
       },
       "id": 22,
       "interval": "5m",
@@ -481,7 +537,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "count(sum by (remote_addr) (count_over_time({service_name=\"uml-diagrams-nginx\"} | json |  __error__=\"\" [$__interval])))",
+          "expr": "count(sum by (remote_addr) (count_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n| request_uri=~\"^/api/.*\"\r\n|  __error__=\"\" [$__interval])))",
           "instant": true,
           "legendFormat": "",
           "queryType": "range",
@@ -490,7 +546,7 @@
         }
       ],
       "timeFrom": "5m",
-      "title": "Realtime visitors (nginx)",
+      "title": "Realtime API visitors",
       "type": "stat"
     },
     {
@@ -500,26 +556,50 @@
       },
       "description": "",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 20,
-        "x": 4,
-        "y": 9
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 14
       },
-      "id": 11,
+      "hideTimeOverride": false,
+      "id": 32,
+      "interval": "1h",
       "options": {
-        "dedupStrategy": "signature",
-        "enableInfiniteScrolling": false,
-        "enableLogDetails": false,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": false,
-        "sortOrder": "Descending",
-        "wrapLogMessage": false
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "value",
+        "wideLayout": true
       },
       "pluginVersion": "11.5.1",
       "targets": [
@@ -530,14 +610,17 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{service_name=\"uml-diagrams-nginx\"} \r\n| json \r\n| request_uri=~\"^/api/.*\"\r\n| line_format \"➡️ {{.status}} {{.request_method}} {{.request_uri}}\"",
+          "expr": "count(sum by (remote_addr) (count_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n| request_uri=~\"^/api/.*\"\r\n|  __error__=\"\" [$__interval])))",
+          "instant": true,
           "legendFormat": "",
           "queryType": "range",
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Recent requests to api (nginx)",
-      "type": "logs"
+      "timeFrom": "now-1M",
+      "title": "Monthly API visitors",
+      "type": "stat"
     },
     {
       "collapsed": false,
@@ -545,11 +628,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 18
       },
       "id": 26,
       "panels": [],
-      "title": "Request statistics over time",
+      "title": "Nginx Request Statistics Over Time",
       "type": "row"
     },
     {
@@ -572,7 +655,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 40,
+            "fillOpacity": 50,
             "gradientMode": "hue",
             "hideFrom": {
               "legend": false,
@@ -645,15 +728,7 @@
                   "fixedColor": "super-light-blue",
                   "mode": "fixed"
                 }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "max latency"
-            },
-            "properties": [
+              },
               {
                 "id": "custom.fillOpacity",
                 "value": 30
@@ -666,7 +741,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 18
+        "y": 19
       },
       "id": 16,
       "maxDataPoints": 50,
@@ -704,7 +779,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "max by (host) (max_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n| unwrap request_time\r\n|  __error__=\"\"  [$__interval]))",
+          "expr": "max by (http_host) (max_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n| unwrap request_time\r\n|  __error__=\"\"  [$__interval]))",
           "legendFormat": "max latency",
           "queryType": "range",
           "refId": "D"
@@ -733,7 +808,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 40,
+            "fillOpacity": 50,
             "gradientMode": "hue",
             "hideFrom": {
               "legend": false,
@@ -761,15 +836,11 @@
           "decimals": 0,
           "mappings": [],
           "thresholds": {
-            "mode": "absolute",
+            "mode": "percentage",
             "steps": [
               {
-                "color": "green",
+                "color": "text",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
@@ -785,52 +856,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "dark-orange",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "{statuscode=\"200\"} 200"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "{statuscode=\"404\"} 404"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "semi-dark-purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "{statuscode=\"500\"} 500"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
+                  "fixedColor": "red",
                   "mode": "fixed"
                 }
               }
@@ -845,7 +871,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "light-orange",
+                  "fixedColor": "orange",
                   "mode": "fixed"
                 }
               }
@@ -887,7 +913,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 18
+        "y": 19
       },
       "id": 2,
       "maxDataPoints": 50,
@@ -913,13 +939,13 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum by (status) (count_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json |\r\n__error__=\"\" [$__interval]))",
+          "expr": "sum by (status) (count_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n| __error__=\"\" [$__interval]))",
           "legendFormat": "HTTP Status {{status}}",
           "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "HTTP status codes over time",
+      "title": "HTTP Response Status Codes Over Time",
       "transformations": [
         {
           "id": "filterFieldsByName",
@@ -989,12 +1015,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "text",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
@@ -1003,7 +1025,7 @@
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
+              "id": "byFrameRefID",
               "options": "Bytes sent"
             },
             "properties": [
@@ -1015,21 +1037,6 @@
                 }
               }
             ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "appfelstrudel"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
           }
         ]
       },
@@ -1037,7 +1044,7 @@
         "h": 9,
         "w": 8,
         "x": 16,
-        "y": 18
+        "y": 19
       },
       "id": 9,
       "maxDataPoints": 50,
@@ -1064,9 +1071,9 @@
           "direction": "backward",
           "editorMode": "code",
           "expr": "sum by (http_host) (sum_over_time({service_name=\"uml-diagrams-nginx\"}\r\n| json\r\n| status=200\r\n| unwrap body_bytes_sent\r\n|  __error__=\"\" [$__interval]))",
-          "legendFormat": "Bytes sent",
+          "legendFormat": "{{container}}",
           "queryType": "range",
-          "refId": "A"
+          "refId": "Bytes sent"
         }
       ],
       "title": "Bytes Sent",
@@ -1078,7 +1085,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 28
       },
       "id": 28,
       "panels": [],
@@ -1090,7 +1097,7 @@
         "type": "loki",
         "uid": "${loki_datasource}"
       },
-      "description": "",
+      "description": "HTTP Referer - это заголовок, который браузер или клиент передаёт при HTTP-запросе. Он указывает, с какого сайта пришёл пользователь перед тем, как загрузить текущую страницу.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1159,7 +1166,7 @@
         "h": 6,
         "w": 9,
         "x": 0,
-        "y": 28
+        "y": 29
       },
       "id": 6,
       "maxDataPoints": 1,
@@ -1285,7 +1292,7 @@
         "h": 6,
         "w": 15,
         "x": 9,
-        "y": 28
+        "y": 29
       },
       "id": 7,
       "maxDataPoints": 1,
@@ -1438,7 +1445,7 @@
         "h": 8,
         "w": 9,
         "x": 0,
-        "y": 34
+        "y": 35
       },
       "id": 3,
       "maxDataPoints": 1,
@@ -1571,7 +1578,7 @@
         "h": 8,
         "w": 15,
         "x": 9,
-        "y": 34
+        "y": 35
       },
       "id": 12,
       "maxDataPoints": 1,
@@ -1611,7 +1618,7 @@
         }
       ],
       "timeFrom": "15m",
-      "title": "Top 10 Requested api URLs",
+      "title": "Top 10 Requested API URLs",
       "transformations": [
         {
           "id": "organize",
@@ -1634,7 +1641,7 @@
     }
   ],
   "preload": false,
-  "refresh": "",
+  "refresh": "30s",
   "schemaVersion": 40,
   "tags": [
     "loki"
@@ -1675,7 +1682,7 @@
     ]
   },
   "timezone": "",
-  "title": "Access logs data",
+  "title": "Nginx access logs data",
   "uid": "S113XYZ7z",
   "version": 1,
   "weekStart": ""

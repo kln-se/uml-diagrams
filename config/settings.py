@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "drf_spectacular",
     "corsheaders",
+    "django_prometheus",
     # Created apps
     "apps.core",
     "apps.users",
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     # Installed middleware
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     # Default middleware
     "django.middleware.security.SecurityMiddleware",
@@ -66,6 +68,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # Custom middleware
     "apps.core.middleware.LogAllRequestsMiddleware",
+    # Installed middleware (post-processing)
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 
@@ -92,6 +96,7 @@ LOGGING = {
         "verbose_json": {
             "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
             "format": "%(levelname)s %(asctime)s %(name)s %(request)s %(message)s %(status_code)s",  # noqa: E501
+            "rename_fields": {"levelname": "level"},
         },
     },
     "handlers": {
@@ -240,7 +245,7 @@ SPECTACULAR_SETTINGS = {
             - create, retrieve, update or delete sharing invitations.
         2. Admins can do all operations listed above with any diagram or invitation.
     """,
-    "VERSION": "1.19.3-dev",
+    "VERSION": "1.19.4-dev",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
@@ -254,3 +259,7 @@ ALLOWED_HOSTS = [
 CORS_ALLOWED_ORIGINS = [
     env.str("CORS_ALLOWED_ORIGIN", default="http://localhost:3000"),
 ]
+
+# Metrics
+# See: https://github.com/korfuri/django-prometheus/blob/master/documentation/exports.md
+PROMETHEUS_METRICS_EXPORT_PORT_RANGE = range(8001, 8003)

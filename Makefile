@@ -18,11 +18,12 @@ BUILDKIT_PROGRESS = plain
 docker-compose-up:
 	sudo docker compose up -d
 
-docker-compose-up-no-logs:
+docker-compose-up-no-monitoring:
 	sudo docker compose up -d \
 		--scale grafana=0 \
 		--scale loki=0 \
-		--scale promtail=0
+		--scale promtail=0 \
+		--scale prometheus=0
 
 docker-compose-down:
 	sudo docker compose -p $$PROJECT_NAME down
@@ -30,8 +31,8 @@ docker-compose-down:
 docker-compose-stop:
 	sudo docker compose -p $$PROJECT_NAME stop
 
-docker-compose-stop-logs:
-	sudo docker compose -p $$PROJECT_NAME stop grafana loki promtail
+docker-compose-stop-monitoring:
+	sudo docker compose -p $$PROJECT_NAME stop grafana loki promtail prometheus
 
 docker-compose-restart:
 	sudo docker compose -p $$PROJECT_NAME restart

@@ -124,7 +124,7 @@ CORS_ALLOWED_ORIGINS = [
 
 2.1.8. Run django project:
 ```commandline
-python manage.py runserver <port>
+python manage.py runserver --settings=config.settings_local --noreload <port>
 ```
 
 ## 2.2. Deploy

@@ -1,6 +1,7 @@
 volumes:
     loki_data:
     grafana_data:
+    prometheus_data:
 
 networks:
     net:
@@ -21,6 +22,7 @@ services:
         restart: unless-stopped
         depends_on:
           - loki
+          - prometheus
 
     loki:
         container_name: uml-diagrams-loki
@@ -51,3 +53,16 @@ services:
             - nginx
             - api
             - postgres
+
+    prometheus:
+        container_name: uml-diagrams-prometheus
+        build: ./deploy/metrics/prometheus
+        command: --config.file=/etc/prometheus/config.yml
+        volumes:
+            - prometheus_data:/prometheus
+            - ./deploy/metrics/prometheus/config.yml:/etc/prometheus/config.yml
+        networks:
+            - net
+        restart: unless-stopped
+        depends_on:
+            -   api

@@ -22,7 +22,7 @@ Example usage in PowerShell to run container being in the project root directory
 $PROJECT_NAME = "uml-diagrams"
 $API_IMAGE_NAME = "${PROJECT_NAME}-api"
 $API_CONTAINER_NAME = "${PROJECT_NAME}-api"
-$API_VERSION = "1.19.3-dev"
+$API_VERSION = "1.19.4-dev"
 $DB_NAME = "uml_diagrams"
 # For incoming connections
 $GATEWAY_EXT_PORT = 8081
@@ -167,14 +167,16 @@ function docker-create-vols {
     docker volume create "${PROJECT_NAME}_static";
     docker volume create "${PROJECT_NAME}_django_logs";
     docker volume create "${PROJECT_NAME}_grafana_data";
-    docker volume create "${PROJECT_NAME}_loki_data"
+    docker volume create "${PROJECT_NAME}_loki_data";
+    docker volume create "${PROJECT_NAME}_prometheus_data"
 }
 function docker-remove-vols {
     docker volume rm "${PROJECT_NAME}_pg_db_data";
     docker volume rm "${PROJECT_NAME}_static";
     docker volume rm "${PROJECT_NAME}_django_logs";
     docker volume rm "${PROJECT_NAME}_grafana_data";
-    docker volume rm "${PROJECT_NAME}_loki_data"
+    docker volume rm "${PROJECT_NAME}_loki_data";
+    docker volume rm "${PROJECT_NAME}_prometheus_data"
 }
 function docker-create-net {
     docker network create "${PROJECT_NAME}_net"
@@ -188,14 +190,18 @@ function docker-remove-net {
 function docker-compose-up {
     docker-compose up -d
 }
-function docker-compose-up-no-logs {
+function docker-compose-up-no-monitoring {
     docker-compose up -d `
     --scale grafana=0 `
     --scale loki=0 `
-    --scale promtail=0
+    --scale promtail=0 `
+    --scale prometheus=0
 }
 function docker-compose-down {
-    docker-compose -p ${PROJECT_NAME} down
+    docker-compose -p ${PROJECT_NAME} down;
+    docker volume rm "${PROJECT_NAME}_grafana_data";
+    docker volume rm "${PROJECT_NAME}_loki_data";
+    docker volume rm "${PROJECT_NAME}_prometheus_data"
 }
 function docker-compose-stop {
     docker-compose -p ${PROJECT_NAME} stop
@@ -206,8 +212,8 @@ function docker-compose-restart {
 function docker-compose-del {
     docker-compose -p ${PROJECT_NAME} down -v --rmi local
 }
-function docker-compose-stop-logs {
-    docker-compose -p ${PROJECT_NAME} stop grafana loki promtail
+function docker-compose-stop-monitoring {
+    docker-compose -p ${PROJECT_NAME} stop grafana loki promtail prometheus
 }
 
 
@@ -334,11 +340,11 @@ switch ($target) {
         docker-compose -p ${PROJECT_NAME} -v down;
         docker-compose build --no-cache
     }
-    "docker-compose-up-no-logs" {
-        docker-compose-up-no-logs
+    "docker-compose-up-no-monitoring" {
+        docker-compose-up-no-monitoring
     }
-    "docker-compose-stop-logs" {
-        docker-compose-stop-logs
+    "docker-compose-stop-monitoring" {
+        docker-compose-stop-monitoring
     }
     default {
         Write-Host "WARN: invalid target: $target";
